@@ -8,7 +8,7 @@ report, post, or paper, the "Hard rules" section at the end is mandatory.
 
 ## What this repo is, in one paragraph
 
-A single 16 GB AMD RX 9070 XT (Windows 11, llama.cpp Vulkan, custom r6
+A single 16 GB AMD RX 9070 XT (Windows 11, llama.cpp Vulkan, custom
 build, commit bf0040e15 / b10537) runs Qwen3.8-27B (27B params, 48
 Gated-DeltaNet layers + 16 full-attention layers, 262k native context) at
 a 256k allocation: ~56-58 t/s at working depth (<=64k resident) with

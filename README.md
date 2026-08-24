@@ -79,7 +79,7 @@ something here is wrong, show me the receipt and I will fix it.
 ## Honest caveats (read before quoting numbers)
 
 - One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003, llama.cpp
-  custom r6 build). Not leaderboard-comparable; llama-bench done, RULER
+  custom build). Not leaderboard-comparable; llama-bench done, RULER
   pending.
 - 50+ t/s is at working depth (<=64k resident). At 200k the honest number
   is ~42-46 with the skip (~33 stock); at full 250k resident ~27-32,

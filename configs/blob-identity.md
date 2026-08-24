@@ -5,8 +5,8 @@
 - Size: 9,298,488,288 bytes (8,867.73 MiB)
 - SHA256: `57DDA505ECD2B0731341C002FF03EDE1526740DC899E6F840AE1DFB7F1B3FA81`
 - Build: llama.cpp b10537 (`build_commit` bf0040e15), Vulkan backend,
-  custom r6 selector build (`llama-server-v02-select-r6.exe`), shader
-  toolchain glslc 2026.4-dev.
+  custom build with the selective-attention selector, shader toolchain
+  glslc 2026.4-dev.
 - Quantization: 2.72 BPW mixed blob, single-quantized from the unsloth
   BF16 GGUF base (`unsloth/Qwen3.8-27B-GGUF`, LFS oids verified 3/3).
   The tensor-type map is `configs/pareto-map.txt`; the imatrix is
@@ -18,7 +18,7 @@
 ## The selector mechanism: env var, not a compile flag
 
 `GGML_VK_FA_SELECT_KEEP` and `GGML_VK_FA_SELECT_MINKV` are environment
-variables read at runtime by the r6 build. No recompile is needed to
+variables read at runtime by the custom build. No recompile is needed to
 switch between dense and selective operation:
 
 - Unset (or KEEP=100): dense attention, byte-identical dispatch to stock.
