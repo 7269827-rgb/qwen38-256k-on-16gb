@@ -1,0 +1,11 @@
+{
+  "cell": "working-depth-clean-2026-08-24",
+  "build": "llama-server-v02-select-r6.exe (K30 selector), q4_0 draft KV",
+  "endpoint": "http://127.0.0.1:8080/v1",
+  "resident_k": 4.6,
+  "state_classification": "UNCLASSIFIED (documented bistable fast/slow rig; this reading sits in the slow-state band, server launched ~4 min prior after several restarts today)",
+  "protocol": "chunked fill to ~4.6k resident, 3 cache-hit probes on short follow-ups",
+  "probes_tg": [27.5, 25.2, 30.5, 27.3, 26.5, 26.4],
+  "mean_tg": 27.2,
+  "note": "Settled ~27 t/s at shallow-loaded context on this launch. The 56.6/58.5 gate and 63.5/65.6 SANITY numbers were measured in campaign sessions classified FAST state. This cell does NOT reproduce those on the current (unclassified) launch. Per Ox review: no working-depth number for the r6 build should be published beyond the labeled SANITY cells until state-classified; this cell is that record, marked UNCLASSIFIED."
+}

@@ -41,8 +41,12 @@ lineage, pareto blob, q8_0 draft KV). The selective-skip build (the
 46.16/44.6/~42 rows) is a different binary; its own shallow-depth
 measurements are the labeled SANITY cells (60-71 t/s at 5k resident,
 results/bench-r6-SANITY-* equivalents in the measurement record), with
-a clean working-depth cell pending. We do not present the gate number
-as measured by the selective-skip build.
+a clean working-depth cell recorded (results/working-depth-clean-cell-
+2026-08-24.json). Note: this rig has a documented bistable fast/slow
+driver state; the fast numbers came from FAST-state-classified sessions,
+and any launch can land in either state. We do not present the gate
+number as measured by the selective-skip build, and we do not quote a
+working-depth number without its state label.
 
 Numbers are the sanctioned set; result files outrank prose. Every number
 in the table has its receipt in `results/`.
