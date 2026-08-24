@@ -49,6 +49,36 @@ the pareto quant (8.66 GiB, 2.72 BPW) plus q4_0 KV cache keeps the
 allocation inside free VRAM with a ~180 MiB margin at ngl 99. Detail
 in `configs/launch-flags.md` and `configs/blob-identity.md`.
 
+## Daily driver (how people will actually use it)
+
+Two paths, both honest about what you get.
+
+**Path A: stock llama.cpp - works everywhere, no custom build.**
+
+Download the GGUF from Hugging Face, then:
+
+```
+llama-server --model pareto-bf16.gguf \
+  --cache-type-k q4_0 --cache-type-v q4_0 \
+  --spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-p-min 0.60 \
+  --n-gpu-layers 99 --host 127.0.0.1 --port 8080 --ctx-size 262144 \
+  -fa on -ctkd q4_0 -ctvd q4_0
+```
+
+You get the MTP boost (~18-24 t/s on short contexts), the full 256k
+allocation, and the quality gates intact, on any recent llama.cpp
+(b10537-era or newer). At deep context you get stock speeds (~33 t/s at
+200k) because the selective-skip is not active on the stock build.
+
+**Path B: the selective-skip build - the 42-46 t/s number.**
+
+Same command plus two env vars (GGML_VK_FA_SELECT_KEEP=30,
+GGML_VK_FA_SELECT_MINKV=32768). Requires the custom llama.cpp build
+(commit bf0040e15) whose mechanism is documented in `patches/`. Gives
+~42-46 t/s at 200k resident with quality intact.
+
+Most users will start with Path A; Path B is the frontier config.
+
 ## Why this is interesting
 
 A 27B model with 262k context normally needs a 24 GB+ card. It fits on
