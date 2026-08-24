@@ -84,7 +84,7 @@ Four measured findings:
 2. `repro/02-quantize.sh` - llama-quantize --tensor-type-file pareto-map.txt.
 3. `repro/03-run.sh` - llama-server with the exact flags + K30 env
    (GGML_VK_FA_SELECT_KEEP=30 GGML_VK_FA_SELECT_MINKV=32768).
-4. `repro/04-probe.sh` - reproduce the gate cells + the 200k K30 ladder.
+4. `repro/04-probe.sh` - reproduce the gate runs + the 200k K30 sweep.
 
 ## A note from the author
 

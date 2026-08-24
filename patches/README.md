@@ -2,7 +2,7 @@
 
 This directory contains a faithful reconstruction of the source change
 behind the selective-attention tile-skip used for the K30 operating
-point, written from the campaign's build and design notes
+point, written from the project's build and design notes
 (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0 build request,
 and the paper methods section).
 
@@ -11,7 +11,7 @@ was NOT preserved. The selector shipped as an assembled binary
 (`llama-server-v02-select-r6.exe`); only its parts manifests and SHA256
 survive on disk. The binary is the source of record for every number in
 `results/` - the measurements stand on their own regardless of this
-file. This reconstruction is written from the campaign's build and
+file. This reconstruction is written from the project's build and
 design notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0
 build request, and the paper methods section) against the same llama.cpp
 base (b10537-era, commit bf0040e15), using the documented code

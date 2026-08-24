@@ -173,7 +173,7 @@ failure). Keep-all control: 33.00 t/s = +0.13 vs stock, i.e. zero fixed
 tax. Budget model fit: eta=0.80; the model predicted 47.6 t/s at K30,
 measured 46.16 (within 1.5).
 
-### 3.2 Operating-point battery at K30 (fresh boot)
+### 3.2 Operating-point replication (fresh boot)
 
 Multi-hop 3/3 (mean 44.6 t/s, cross-boot drift inside the noise band),
 draft acceptance 0.9167, GSM8K 144/150 (96.0%) vs the 145/150 dense
@@ -266,7 +266,7 @@ known dual-RDNA4 rig at comparable depth (~21 t/s/GPU at 98k).
 ## 6. Limitations
 
 1. All headline numbers are single-session, single-rig, n=1
-   measurements. The full certification battery (two sessions, ABAB
+   measurements. The full certification set (two sessions, ABAB
    interleave, sustained floor) is planned but has not run.
 2. Cross-boot spread of +-2.25 t/s and launch-order drift of +-5 t/s
    exist; sequential arms are bracketed but not interleaved.
@@ -344,6 +344,5 @@ plus AI assistants by role: DeepSeek-flash (execution), Claude and Opus
 Every number above traces to a data file in this repository's
 `results/` directory (see `results/README.md` for the field explainer).
 The result files are the source of record; if prose and a result file
-disagree, the result file is right. The complete decision log, verdict
-documents, and negative-result records are archived alongside this
-submission.
+disagree, the result file is right. The complete decision log and
+negative-result records are archived alongside this submission.

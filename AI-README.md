@@ -96,7 +96,7 @@ llama-bench -m pareto-bf16.gguf -p 512 -n 128 -d <depth> -b 512 -ub 256 \
 # depths: 4096 16384 32768 65536 131072 200000
 ```
 
-Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
+Reproduce the gate runs and the K30 sweep: `repro/04-probe.sh`.
 
 ## What each directory is for
 
