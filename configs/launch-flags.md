@@ -28,5 +28,8 @@ depths: 4096 16384 32768 65536 131072 200000
 
 ## The gate config (256k alloc, working depth)
 
-Same server line with ctx 262144 (the K30 env is OFF for the gate numbers;
-the 56.6/58.5 gate was measured on the pareto config without the selector).
+Same server line with ctx 262144. The gate numbers (56.6/58.5 at 40k
+resident) ran with the K30 selector configured but BELOW its engagement
+threshold: MINKV=32768 means the skip stays off until 32k of KV, so at
+40k resident the gate is effectively dense (selector on but never
+skipping). It is the same K30 build, not a different binary.
