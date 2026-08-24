@@ -1,0 +1,8 @@
+{
+  "test": "protocol-vs-state-2026-08-24",
+  "server": "llama-server-v02-select-r6.exe, K30, q4_0 draft KV, PID 8696 (launched 14:59)",
+  "protocol_A_empty_cache_tg": [24.0, 23.0, 25.8],
+  "protocol_B_loaded_4k6_tg": [26.0, 29.3, 26.9],
+  "finding": "Empty-cache and loaded-cache protocols measure the SAME on this server (24-29 t/s). The 2.3x gap vs the campaign's 60+ numbers is NOT protocol - this server instance is genuinely slower than the campaign's fast-state sessions, or the fast numbers had conditions we cannot reproduce. The fast/slow state hypothesis is NOT disproven by this, but the simple 'protocol difference' excuse IS disproven.",
+  "state": "UNCLASSIFIED - this reading does not match the campaign's fast-state numbers on either protocol"
+}
