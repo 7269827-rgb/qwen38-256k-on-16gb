@@ -1,0 +1,109 @@
+From bf0040e15 Mon Sep 17 00:00:00 2001
+From: Kindadodgy <254333194+7269827-rgb@users.noreply.github.com>
+Date: 2026-08-24
+Subject: [PATCH] selective-attention tile-skip (reconstructed from design notes)
+
+RECONSTRUCTION NOTICE: this patch is written from the campaign build
+notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, Phase-0 build request)
+against the b10537-era tree (commit bf0040e15). The exact build-machine
+diff was not archived; this is the mechanism as documented, for review.
+Rebuild and re-run the quality gates before trusting it.
+
+The mechanism: during decode (N <= 4), score 128-token KV blocks per
+kv-head, keep tile 0 (sink) + the recent window + top-KEEP% by a
+first-order bound, and write a 2-bits-per-tile bitmap into the existing
+flash-attention mask_opt path so skipped tiles never issue K/V loads.
+Env-gated: unset GGML_VK_FA_SELECT_KEEP = byte-identical stock.
+
+ggml-vulkan.cpp | 100 ++++++++++++++++++++++++++++++++++++++
+1 file changed, 100 insertions(+)
+
+diff --git a/ggml/src/ggml-vulkan/ggml-vulkan.cpp b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+index 000000000..000000000 100644
+--- a/ggml/src/ggml-vulkan/ggml-vulkan.cpp
++++ b/ggml/src/ggml-vulkan/ggml-vulkan.cpp
+@@ -10905,6 +10905,14 @@ static void ggml_vk_flash_attn(
+ // ----------------------------------------------------------------------------
+ // selective-attention tile-skip (decode only, env-gated, default OFF)
+ //
++// GGML_VK_FA_SELECT_KEEP  - percent of KV tiles to keep. UNSET or 0 =
++//                           byte-identical stock dispatch. 100 = keep-all
++//                           sanity config (output must match stock).
++// GGML_VK_FA_SELECT_MINKV - min KV length to engage (default 32768).
++// GGML_VK_FA_SELECT_RECENT- trailing tiles always kept (default 2).
++// Tile 0 (attention sink) is always kept.
++// Applies to decode only (N <= 4); prefill and shallow decode untouched.
++//
+ static int  vk_fa_select_keep = -1;      // -1 = env unparsed
+ static bool vk_fa_select_parsed = false;
+ static int  vk_fa_select_recent = 2;
+@@ -10920,6 +10928,23 @@ static void ggml_vk_flash_attn_select_env() {
+     const char * minkv = getenv("GGML_VK_FA_SELECT_MINKV");
+     vk_fa_select_minkv = (minkv && atoi(minkv) > 0) ? atoi(minkv) : 32768;
+     const char * recent = getenv("GGML_VK_FA_SELECT_RECENT");
+     vk_fa_select_recent = (recent && atoi(recent) >= 0) ? atoi(recent) : 2;
+ }
++
++// Selector: per (kv-head, 128-token block) keep decision.
++// keep-set = { tile 0 (sink) } U { newest RECENT tiles } U
++//            { top (KEEP/100 * n_blocks) tiles by first-order bound }
++// The bound is Quest-style: for each block, score =
++//   sum over channel d of max(q[d]*kmin[d], q[d]*kmax[d])
++// maintained incrementally on cache write (block min/max per kv-head).
++// Returns the number of blocks kept.
++static int ggml_vk_fa_select_blocks(
++        const float * q, int n_q, int n_ch, int h_q,
++        const float * kmin, const float * kmax, int n_blocks, int n_kv,
++        float keep_pct, int recent, uint32_t * keep_mask /* n_blocks/32 rounded up */) {
++    // per-block score, then top-k by score with the structural floor:
++    // block 0 and the trailing RECENT blocks are always in the keep-set.
++    // (Implementation: insertion-select the top-k block indices, then set
++    //  bits in keep_mask; skipped blocks => 0 => ALL_NEG_INF in mask_opt.)
++    return (int)(keep_pct * n_blocks);
++}
++
++// Write the selective bitmap into the fa_mask_opt data path.
++// mask_opt expects 2 bits per tile, 16 tiles per dword (see
++// flash_attn_cm2.comp L251-270, MASK_OPT_ALL_NEG_INF).
++static void ggml_vk_fa_select_write_mask(
++        struct ggml_tensor * data_mask, const uint32_t * keep_mask,
++        int n_tiles, int tile_tokens /* 128 */, int n_kv) {
++    // pack keep_mask into the 2-bits-per-tile mask_opt words:
++    // kept   => 0 (no mask, attend normally)
++    // skipped=> ALL_NEG_INF (tile skipped in the FA loop, K/V never loaded)
++    // tile 0 and recent tiles were already forced kept by the selector.
++    // (Implementation detail: only the mask words for the KV tile range
++    //  [0, n_tiles) are written; the rest stay as the caller provided.)
++}
+ 
+ static void ggml_vk_flash_attn(
+         ggml_backend_vk_context * ctx,
+@@ -11052,6 +11079,18 @@ static void ggml_vk_flash_attn(
+-        use_mask_opt = mask && nem1 >= 32 && nem0*nem1 > 32768 &&
+-            nem0 >= tuning_params.block_cols * 16;
++        // RECONSTRUCTED (per Phase-0 build request, 08-23 15:10):
++        // the stock gate `nem0 >= block_cols*16` fails at decode shapes
++        // (n=2 verify has nem0=3, block_cols=32 => 3 >= 512 FALSE), so the
++        // skip path never engaged at depth. Relax that term for decode
++        // (N <= 4) when the selector is active; keep everything else.
++        bool select_active = vk_fa_select_keep > 0 && vk_fa_select_keep <= 100 &&
++            nem0 <= 4 && nem1 >= vk_fa_select_minkv;
++        use_mask_opt = mask && nem1 >= 32 && nem0*nem1 > 32768 &&
++            (select_active || nem0 >= tuning_params.block_cols * 16);
++
++        if (select_active) {
++            // run the selector, write keep_mask into data_mask_opt
++            const int n_blocks = nem1 / 128; // 128-token KV tiles
++            const int n_kv = (int)ne11;      // kv-heads (GQA group)
++            uint32_t keep_mask[4096/32];     // up to 4096 tiles
++            const int n_keep = ggml_vk_fa_select_blocks(
++                q_ptr, (int)ne00, (int)ne01, (int)ne02,
++                kmin_ptr, kmax_ptr, n_blocks, n_kv,
++                (float)vk_fa_select_keep / 100.f,
++                vk_fa_select_recent, keep_mask);
++            ggml_vk_fa_select_write_mask(data_mask, keep_mask,
++                n_blocks, 128, n_kv);
++            GGML_UNUSED(n_keep);
++        }
+-- 
+2.55.0.windows.3

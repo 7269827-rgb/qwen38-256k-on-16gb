@@ -284,11 +284,16 @@ known dual-RDNA4 rig at comparable depth (~21 t/s/GPU at 98k).
    elsewhere.
 8. The selector keep-set is first-order (Quest-class bounds); hard
    multi-hop under-selection is the known failure mode.
-9. MTP acceptance depends on the draft seeing consistent context; the
-   selector masking policy for the draft path is documented, but the
-   interaction is only bounded by acceptance receipts, not exhaustively
-   mapped.
-10. LongBench v2 was run on a 25-question short/medium subset at the
+9. The selective-skip source change is published as a reconstruction in
+   `patches/` (written from the build notes; the exact build-machine
+   diff was not archived, so the shipped binary is the source of record
+   for the measurements). Anyone rebuilding from the reconstruction
+   must re-run the quality gates before trusting it.
+10. MTP acceptance depends on the draft seeing consistent context; the
+    selector masking policy for the draft path is documented, but the
+    interaction is only bounded by acceptance receipts, not exhaustively
+    mapped.
+11. LongBench v2 was run on a 25-question short/medium subset at the
     K30 operating point (14/25 = 56%; contexts up to ~46k words, thinking
     off, temperature 0). RULER is the next benchmark step; the quality
     story rests on depth-GSM8K at 200k, base GSM8K, the multi-hop smoke

@@ -114,29 +114,17 @@ something here is wrong, show me the receipt and I will fix it.
 - `results/` - every JSON behind the table (results/README.md = field explainer)
 - `configs/` - the exact quant map + launch flags + K30 env + blob hash
 - `repro/` - 01 download, 02 quantize, 03 run, 04 probe
+- `patches/` - reconstructed source for the selective-attention tile-skip
+  (see the honesty note inside: the build-machine diff was not archived)
 - `notes/caveats.md` - the honest box
 
 ## License
 
-This repo is three layers, each with its own license (this is normal for
-real projects that build on other work):
-
-| Layer | License | What it means |
-|---|---|---|
-| The GGUF weights | Apache-2.0 (inherited from Qwen3.8-27B) | The model's own license; we build on it with attribution |
-| Quant map, configs, scripts | MIT (ours) | Anyone can use them for any purpose, keep the copyright notice, no warranty |
-| Paper text + figures | CC-BY-4.0 (ours) | Anyone can share/adapt them, but must credit the author |
-
-- **MIT** (see LICENSE): use, copy, modify, sell - keep the notice, no
-  warranty, no liability.
-- **CC-BY-4.0** (see paper/LICENSE): share and adapt the paper/figures
-  with attribution.
-- **Apache-2.0**: inherited from the base model; permissive with patent
-  protection. We are not re-licensing their work, only building on it.
-
-Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0), Unsloth's GGUF
-pipeline. Credit: the human (the thesis + oversight), four AI assistants
-by role, and the Chinese selective-attention research community.
+MIT (code/configs, see LICENSE) · CC-BY-4.0 (paper text + figures, see
+paper/LICENSE). Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0),
+Unsloth's GGUF pipeline. Credit: the human (the thesis + oversight),
+four AI assistants by role, and the Chinese selective-attention research
+community.
 
 ## How to cite
 

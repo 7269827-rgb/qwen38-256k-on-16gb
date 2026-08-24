@@ -104,6 +104,9 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 - `configs/` - `pareto-map.txt` (exact per-tensor quant map),
   `launch-flags.md` (exact commands), `blob-identity.md` (hash + build
   identity + env-var semantics).
+- `patches/` - reconstructed source diff for the selective-skip
+  (rebuilt from design notes; the exact build-machine diff was not
+  archived - the binary is the source of record for the numbers).
 - `repro/` - 01 download, 02 quantize, 03 run, 04 probe.
 - `paper/` - the arXiv-track paper draft (`paper.md`) + figures and the
   raw CSVs behind them.
