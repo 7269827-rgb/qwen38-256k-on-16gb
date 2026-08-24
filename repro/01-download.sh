@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # 01-download.sh - fetch the BF16 base + imatrix, verify LFS oids
 # Source: unsloth/Qwen3.8-27B-GGUF on Hugging Face
-# The exact LFS oids were verified 3/3 against the published repo
-# when this campaign ran; re-verify against the current tree.
+# The exact LFS oids were verified 3/3 against the published repo when
+# the measurements were made; re-verify against the current tree.
 set -e
 REPO="https://huggingface.co/unsloth/Qwen3.8-27B-GGUF/resolve/main"
 mkdir -p unsloth-bf16 && cd unsloth-bf16

@@ -1,7 +1,8 @@
 # Launch flags (exact, reproducible)
 
 Model: pareto-bf16.gguf (Qwen3.8-27B, 2.72 BPW)
-Build: llama.cpp Vulkan, custom r6 build (b10537-era, commit bf0040e15)
+Build: llama.cpp Vulkan, custom build with the selective-attention
+selector (b10537-era, commit bf0040e15)
 
 ## Server (the 200k K30 configuration)
 

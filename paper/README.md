@@ -1,7 +1,7 @@
 # paper/ - the writeup
 
-- `paper.md` - the arXiv-track paper draft (base: the campaign research
-  draft; every number traces to a file in `../results/`).
+- `paper.md` - the arXiv-track paper draft; every number traces to a file
+  in `../results/`.
 - `figures/` - the graphs + the raw CSVs behind them:
   - `fig-depth-curve.png/.csv` - server-path t/s vs resident depth.
   - `fig-k30-vs-stock-mtp.png/.csv` - K30 vs stock on the MTP-on path.
