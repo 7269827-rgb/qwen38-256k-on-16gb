@@ -17,6 +17,17 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
   llama-bench protocol runs with MTP OFF by design.
 - `test_time` = UTC timestamp of the run.
 
+## A note on the "2.0625 bpw" you will see in the llama-bench files
+
+The llama-bench JSONs carry `model_type: "qwen35 27B IQ2_XXS - 2.0625
+bpw"`. That is llama-bench printing the GGUF's declared dominant quant
+type name (IQ2_XXS), not the actual file-wide bit rate. The pareto blob
+is a per-tensor mix: q2_K on the 99 FFN gate/up tensors, IQ2_XXS
+elsewhere, 31 q4_K FFN tensors, q8_0 guards. Measured on the real file:
+9,298,488,288 bytes x 8 / 27,320,697,856 params = **2.72 BPW**, which is
+what the README reports. Both numbers are true; they measure different
+things (declared type name vs actual mixed-file density).
+
 ## Server-path files (MTP on)
 
 | File | What it is |
@@ -29,6 +40,7 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
 | `bench-r6op-mh.json` | Operating-point battery at K30 on a fresh boot: 44.6 t/s mean, 3/3 PASS. |
 | `bench-depth-gsm8k.json` | Depth-GSM8K at 199.7k resident, selection ACTIVE: 29/30 (96.7%). Per-problem `genPerS` included (39-46 t/s band). |
 | `bench-r6op-gsm8k.json` | K30 operating-battery GSM8K (selection inactive on bare questions): 144/150 (96.0%). The strongest base-GSM8K receipt. NOT a selectivity receipt. |
+| `gsm8k-dense-baseline.json` | Dense (unquantized-family) reference GSM8K: 145/150 (96.7%). The baseline the paper compares the quant against. Same 150-problem self-consistent protocol. |
 | `bench-longbench-v2.json` | LongBench v2, short/medium subset (25 q, seed-42 deterministic sample, thinking off, temperature 0): 14/25 (56%). Single rig, K30 operating point. Hard bilingual MC benchmark; contexts up to ~46k words. |
 | `gsm8k-pareto64.json` | Gate-era base GSM8K (selection inactive, bare questions): 142/150 (94.7%). NOT a selectivity receipt. |
 

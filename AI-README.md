@@ -47,7 +47,7 @@ LongBench v2 (short/medium subset, 25 q, thinking off): 14/25 (56%),
 PASS, but N=3 is a smoke test, not a certification. Draft acceptance
 0.91-0.94.
 
-Keep-all control: 33.00 t/s vs 32.87 stock = zero fixed tax
+Keep-all control: 33.00 t/s vs 32.87 stock = zero measurable fixed tax
 (`results/bench-r6-keepall.json`).
 
 ## How to get the model

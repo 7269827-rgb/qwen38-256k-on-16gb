@@ -13,7 +13,7 @@ placement-aware quantization recipe ("pareto") applies 2-bit Q2_K only to
 the feed-forward gate/up tensors, where decode time concentrates, reaching
 the integer-dot MMVQ fast path while preserving quality (GSM8K 144/150 on a
 self-consistent protocol at the K30 operating point vs a 145/150
-dense-reference baseline). Second, a selective-attention tile-skip
+dense-reference baseline, receipt `results/gsm8k-dense-baseline.json`). Second, a selective-attention tile-skip
 mechanism skips K/V tiles outside an attention-relevance keep-set during
 generation; at KEEP=30% it delivers a 40% decode speedup over the same
 build without selection (46.16 vs 32.87 tokens/s cache-hit at 199.7k
@@ -176,8 +176,9 @@ measured 46.16 (within 1.5).
 
 Multi-hop 3/3 (mean 44.6 t/s, cross-boot drift inside the noise band),
 draft acceptance 0.9167, GSM8K 144/150 (96.0%) vs the 145/150 dense
-baseline: two arithmetic slips, attributed to decode stochasticity (the
-runner sends no temperature or seed).
+baseline (`results/gsm8k-dense-baseline.json`): two arithmetic slips,
+attributed to decode stochasticity (the runner sends no temperature or
+seed).
 
 ### 3.3 The depth curve and pass anatomy
 

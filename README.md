@@ -56,7 +56,7 @@ Four measured findings:
 1. **The selective-attention tile-skip (the 200k mechanism).** Attention
    skips K/V tiles outside a keep-set during generation
    (GGML_VK_FA_SELECT_KEEP=30). At 200k resident this holds ~42-46 t/s
-   vs ~33 stock on the server/MTP path, with zero fixed overhead
+   vs ~33 stock on the server/MTP path, with zero measurable fixed overhead
    (keep-all 33.00 vs stock 32.87), and depth-GSM8K 29/30 at 200k. In the
    MTP-off llama-bench raw curve the skip is neutral (45.3 vs 45.2 etc) -
    the gain is measured on the speculative-decode path. Builds on the
@@ -118,11 +118,25 @@ something here is wrong, show me the receipt and I will fix it.
 
 ## License
 
-MIT (code/configs, see LICENSE) · CC-BY-4.0 (paper text + figures, see
-paper/LICENSE). Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0),
-Unsloth's GGUF pipeline. Credit: the human (the thesis + oversight),
-four AI assistants by role, and the Chinese selective-attention research
-community.
+This repo is three layers, each with its own license (this is normal for
+real projects that build on other work):
+
+| Layer | License | What it means |
+|---|---|---|
+| The GGUF weights | Apache-2.0 (inherited from Qwen3.8-27B) | The model's own license; we build on it with attribution |
+| Quant map, configs, scripts | MIT (ours) | Anyone can use them for any purpose, keep the copyright notice, no warranty |
+| Paper text + figures | CC-BY-4.0 (ours) | Anyone can share/adapt them, but must credit the author |
+
+- **MIT** (see LICENSE): use, copy, modify, sell - keep the notice, no
+  warranty, no liability.
+- **CC-BY-4.0** (see paper/LICENSE): share and adapt the paper/figures
+  with attribution.
+- **Apache-2.0**: inherited from the base model; permissive with patent
+  protection. We are not re-licensing their work, only building on it.
+
+Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0), Unsloth's GGUF
+pipeline. Credit: the human (the thesis + oversight), four AI assistants
+by role, and the Chinese selective-attention research community.
 
 ## How to cite
 
