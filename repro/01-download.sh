@@ -12,6 +12,6 @@ mkdir -p unsloth-bf16 && cd unsloth-bf16
 #   git clone https://huggingface.co/unsloth/Qwen3.8-27B-GGUF
 # Verify the imatrix against the published oid 0ee5b10b...
 #   sha256sum imatrix_unsloth.gguf
-# (The imatrix we built with is already hash-verified in this repo's
+# (The imatrix I built with is already hash-verified in this repo's
 # record; the BF16 base oids are listed in the repo's .gitattributes.)
 echo "See configs/blob-identity.md for the verified hashes."

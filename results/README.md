@@ -38,7 +38,7 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
 Generation TG (t/s): stock 45.3 / 43.5 / 41.4 / 37.9 / 32.5 / 28.3;
 K30 45.2 / 43.5 / 41.5 / 37.8 / 32.4 / 28.3. Identical within 0.1 at every
 depth: the selective-skip gain is measured only on the MTP-on server path,
-and we say exactly that in the README.
+and I say exactly that in the README.
 
 ## Why two number sets
 
@@ -47,4 +47,4 @@ and we say exactly that in the README.
   results.
 - The server path is how the model is actually used (MTP on), and the
   selective-skip only helps there. Real-usage speed is higher than the raw
-  curve; we report both, labeled, and never mix them.
+  curve; I report both, labeled, and never mix them.

@@ -31,7 +31,6 @@ quote the file and line.
 
 ## Ground rules (from CONTRIBUTING.md)
 
-- No em dashes in any file.
 - Two number regimes stay labeled: server/MTP-on and llama-bench MTP-off.
 - Never present a single best run as the sustained bar.
 - No absolute paths, no machine names, no credentials.

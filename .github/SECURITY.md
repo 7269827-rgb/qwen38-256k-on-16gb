@@ -23,7 +23,7 @@ Please include:
 - What the issue allows an attacker to do
 - A minimal reproduction if possible
 
-## What we take seriously
+## What I take seriously
 
 - Anything in the repro scripts that could execute unexpected commands
 - Credential or path handling in documented commands

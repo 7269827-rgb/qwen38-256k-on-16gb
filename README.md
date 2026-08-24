@@ -72,7 +72,7 @@ Four measured findings:
 This is my only GPU, and I am still paying it off. It is also my school
 and everything rig, so I could not go as deep into this as I wanted.
 I left all the data and receipts here so people can improve on this and
-do not waste time on ground we already covered. I hope this helps people
+do not waste time on ground I already covered. I hope this helps people
 who cannot afford a big rig, and I welcome feedback and replication. If
 something here is wrong, show me the receipt and I will fix it.
 
@@ -88,7 +88,7 @@ something here is wrong, show me the receipt and I will fix it.
   amplification) and llama-bench MTP-off (raw decode, comparable to other
   cards). Never conflate them.
 - Multi-hop N=3 is a smoke test, not a certification; large-N is pending.
-- 2-bit is a real quality cliff; we hold quality by localizing the damage.
+- 2-bit is a real quality cliff; I hold quality by localizing the damage.
 - Bistable fast/slow state (44.57 vs 32.67 = 1.36x) + ~20% sustained
   drift; all comparisons same-day, interleaved, cache-hit.
 

@@ -1,7 +1,7 @@
 # PAPER DRAFT v2 - arXiv track (2026-08-23 evening)
 # STATUS: SHIPPING (2026-08-23 user decision; ship bar set at ~42 sustained @200k). arXiv submission pending final peer checks.
 # Rules applied: every number traces to a receipt file; "candidate" status explicit;
-# no novelty claimed for draft-window (merged elsewhere); selective tile-skip is our
+# no novelty claimed for draft-window (merged elsewhere); selective tile-skip is my
 # contribution with the CN lineage credited.
 
 ---
@@ -17,7 +17,7 @@
 ## ABSTRACT (draft, ~210 words)
 
 Running 27B-class language models at very long context has been framed as a
-multi-GPU problem. We show that a single 16 GB consumer GPU (AMD RX 9070 XT,
+multi-GPU problem. I show that a single 16 GB consumer GPU (AMD RX 9070 XT,
 Windows, Vulkan via llama.cpp) can run a 27B hybrid-attention model
 (Qwen3.8-27B: 48 gated-delta-net layers plus 16 full-attention layers) with a
 256k allocation and generate at approximately 45 tokens/s at 200k-token
@@ -25,13 +25,13 @@ resident context, under documented conditions and pending final certification.
 Two mechanisms carry the result. First, a placement-aware quantization recipe
 ("pareto") applies 2-bit Q2_K only to the feed-forward gate/up tensors, where
 decode time concentrates, reaching the integer-dot MMVQ fast path while
-preserving quality (GSM8K 144/150 on our self-consistent protocol vs 145/150
+preserving quality (GSM8K 144/150 on my self-consistent protocol vs 145/150
 dense-reference baseline). Second, a selective-attention tile-skip mechanism
 skips K/V tiles outside an attention-relevance keep-set during generation; at
 KEEP=30% it delivers a 40% decode speedup over the same build without
 selection (46.16 vs 32.87 tokens/s cache-hit at 199.7k resident) with retrieval
 and acceptance unchanged. A keep-all control measures zero fixed overhead, and
-a simple bandwidth model predicts the measured ladder within 1.5 tokens/s. We
+a simple bandwidth model predicts the measured ladder within 1.5 tokens/s. I
 publish the complete decision log including negative results (an attention-
 window patch that measured neutral, a fused-kernel design that regressed 33%),
 the bistable driver-state characterization, and all receipts. All numbers are
@@ -52,7 +52,7 @@ Why it is hard on this hardware class:
 - 16 GB VRAM must hold weights AND a 200k-token KV cache simultaneously.
 - On Windows/AMD the practical backends differ from CUDA: HIP holds ~455-464
   GB/s on attention shapes where Windows Vulkan was measured collapsed to
-  ~98 GB/s for hidden>=4096 (llama.cpp issue #26663 - our canonical external
+  ~98 GB/s for hidden>=4096 (llama.cpp issue #26663 - my canonical external
   anchor); the depth wall is therefore kernel-side, not silicon-side.
 - Speculative decoding (MTP) changes the cost anatomy: every decode step
   scans the full KV once per verify batch, making attention batch-linear in
@@ -70,17 +70,17 @@ C2. A selective-attention tile-skip mechanism for Vulkan FA (mask_opt path
     engaged at decode shapes), with pre-registered KEEP ladder, keep-all
     control, and quality gating - extending prior CN-community selective-
     attention research (Quest/NSA lineage) to an end-to-end consumer-Vulkan
-    validation at 200k, which we find unpublished anywhere (sweep F6).
+    validation at 200k, which I find unpublished anywhere (sweep F6).
 C3. A measured depth anatomy and pass-budget model for MTP decoding on this
     class (attention ~72% of pass, batch-linear; W=20.7 ms weights; flat
     ~13 ms draft term), predictive to ~1.5 tokens/s.
 C4. An honest engineering record: closed config space, bistable driver
     states, and four falsified mechanisms with receipts.
 
-Non-claims (explicit): we do NOT claim novelty for draft-attn-window (merged
+Non-claims (explicit): I do NOT claim novelty for draft-attn-window (merged
 in vllm-ascend #10023, speculators #523, sparkinfer #751, ik_llama.cpp #2021);
-we measured it neutral on this model anyway (W-patch-receipt-2026-08-23.md -
-Qwen3.8's attention is global, windows are not honored). Our GSM8K protocol is
+I measured it neutral on this model anyway (W-patch-receipt-2026-08-23.md -
+Qwen3.8's attention is global, windows are not honored). My GSM8K protocol is
 self-consistent, not leaderboard-comparable. All numbers are n=1 rig.
 
 ## 2. METHODS
@@ -128,8 +128,8 @@ data_mask_opt (build-request-select-phase0-2026-08-23.md).
 Intellectual credit: the selective-attention lineage (Quest, NSA, SnapKV/
 H2O protection results, COBS second-order analysis, opencoti-llamafile's
 CUDA block-skip) is the ancestor; the CN-community sweep
-(cn-selective-attention-sweep-2026-08-23.md, F1-F11) is our sourced map.
-Our contribution is the end-to-end consumer-Vulkan validation at 200k with
+(cn-selective-attention-sweep-2026-08-23.md, F1-F11) is my sourced map.
+My contribution is the end-to-end consumer-Vulkan validation at 200k with
 pre-registered quality gating - unpublished territory per sweep F6.
 Control: keep-all (KEEP=100 through the selector machinery) measures zero
 fixed tax (+0.13 t/s vs stock; keepall-control-verdict-2026-08-23.md), so
@@ -207,19 +207,19 @@ selective-skip) - the decision-log method is itself part of the contribution.
 
 - F1 Depth curve [DONE]: decode t/s vs resident context; fig-depth-curve.png/.csv.
 - F2 Ladder table/graph: t/s and acceptance vs KEEP at 199.7k; data
-  bench-r6l2-*; render as dual-axis line+markers (us, node-canvas).
-- F3 Speed-vs-quality scatter vs peers: our configs (pareto@40k, K30@200k)
+  bench-r6l2-*; render as dual-axis line+markers (me, node-canvas).
+- F3 Speed-vs-quality scatter vs peers: my configs (pareto@40k, K30@200k)
   vs verified external anchors (dual-GPU rig PER-GPU numbers ~21 t/s/GPU
   @98k per SCALE-UP-NOTE; AMD day-0 51.8 t/s R9700 MTP2; CUDA reference
   12.6 t/s @250k) - axes t/s (per-GPU normalized) vs context depth; sources
-  cited inline; WE generate (numbers need care).
+  cited inline; I generate (numbers need care).
 - F4 t/s-per-VRAM-GB bars: pareto blob vs alternatives (clean-bf16, all-q2k,
-  UD variants) at matched depth; data q2k-experiment.md + GATE-MET.md; us.
+  UD variants) at matched depth; data q2k-experiment.md + GATE-MET.md; me.
 - F5 Sustained-floor trace at K30 (20-min rolling median): PENDING ship
-  battery; us.
-- F6 Failure/closure table: the section 3.5 table as a graphic; us.
+  battery; me.
+- F6 Failure/closure table: the section 3.5 table as a graphic; me.
 - F7 (optional) Pass-anatomy stacked bar: 75.3 ms decomposition at 200k
-  (W/draft/attention/D); data f200-measurement doc; us.
+  (W/draft/attention/D); data f200-measurement doc; me.
 
 ## 5. DISCUSSION
 
@@ -273,7 +273,7 @@ block-skip; coverage thresholds at 24-48k - F3); FlashPrefill thresholding at
 256k (F5, arXiv 2603.06199). Upstream llama.cpp has NO training-free
 selective attention (F4): DSA #23346 needs a trained indexer; MiniMax-M3 MSA
 #24908 is trained-semantics; SparQ streams all KV. Draft-window precedents
-(NOT our claim): vllm-ascend #10023, speculators #523, sparkinfer #751,
+(NOT my claim): vllm-ascend #10023, speculators #523, sparkinfer #751,
 ik_llama.cpp #2021. Kernel-side context: llama.cpp #26663 (Windows Vulkan
 bandwidth collapse at hidden>=4096), vLLM #47763 (verify-as-decode re-stream).
 MagicDec (arXiv 2408.11049) for selective drafting at depth.
@@ -305,7 +305,7 @@ MagicDec (arXiv 2408.11049) for selective drafting at depth.
 This is my only GPU, and I am still paying it off. It is also my school
 and everything rig, so I could not go as deep into this as I wanted.
 I left all the data and receipts here so people can improve on this and
-do not waste time on ground we already covered. I hope this helps people
+do not waste time on ground I already covered. I hope this helps people
 who cannot afford a big rig, and I welcome feedback and replication. If
 something here is wrong, show me the receipt and I will fix it.
 

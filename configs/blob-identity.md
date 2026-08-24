@@ -11,7 +11,7 @@
   BF16 GGUF base (`unsloth/Qwen3.8-27B-GGUF`, LFS oids verified 3/3).
   The tensor-type map is `configs/pareto-map.txt`; the imatrix is
   unsloth's `imatrix_unsloth.gguf` (SHA256 of the published LFS oid
-  `0ee5b10b...` verified against our copy).
+  `0ee5b10b...` verified against my copy).
 - Quantizer: `llama-quantize --allow-requantize --imatrix
   imatrix-unsloth-dl.gguf --tensor-type-file pareto-map.txt`
 
@@ -39,5 +39,5 @@ measures zero fixed tax: 33.00 vs 32.87 t/s stock at 199.7k resident.
 4. Check the result hashes to `57DDA505...` (above).
 
 This is a research artifact, not an official unsloth file. The same
-numbers are reproducible from the map + imatrix; we publish the map
+numbers are reproducible from the map + imatrix; I publish the map
 exactly as used.

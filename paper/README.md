@@ -8,9 +8,6 @@
   - `fig-llamabench.png/.csv` - llama-bench MTP-off curves (stock and
     K30 nearly overlap: the skip is neutral on the raw path).
 
-Style rule (kept everywhere in this repo): no em dashes. Commas,
-periods, parentheses.
-
 The paper is the honest version: gate headline at working depth, ~42-46
 sustained at 200k, both number sets labeled, single-rig n=1 caveats,
 and the Chinese selective-attention lineage credited.

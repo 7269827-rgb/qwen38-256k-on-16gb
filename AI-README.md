@@ -106,7 +106,7 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 - `notes/caveats.md` - the honest box; read before quoting numbers.
 - `.github/` - community health files: CODE_OF_CONDUCT, CONTRIBUTING,
   SECURITY. If an agent or human wants to contribute, CONTRIBUTING.md has
-  the ground rules (including: no em dashes, receipts required).
+  the ground rules (including: receipts required).
 - `paper/LICENSE` - the paper text and figures are CC-BY-4.0; the root
   LICENSE (MIT) covers code and configs. Cite accordingly.
 
@@ -123,7 +123,6 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 
 ## Hard rules (if generating any public text from this repo)
 
-- No em dashes. Use commas, periods, parentheses.
 - Label the two number regimes every time: (a) server/MTP on = headline,
   (b) llama-bench MTP off = comparability. Never conflate them.
 - Report 46.16 / 44.6 / ~42 sustained as three distinct values. Never
@@ -131,7 +130,7 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 - Multi-hop is N=3 smoke only; say larger-N is in progress.
 - Base GSM8K ran selection-inactive; depth-GSM8K is the selection-active
   gate. Do not cite 144/150 as a selectivity receipt.
-- Use "under documented conditions", "we measured", "to our knowledge".
+- Use "under documented conditions", "I measured", "to my knowledge".
   No superlatives.
 - The 2-bit quant is a real quality cliff; quality is held by localizing
   the damage (q2_K only on FFN gate/up), not by claiming 2-bit is

@@ -8,7 +8,6 @@
 
 ## Checklist
 
-- [ ] No em dashes in any file (commas, periods, parentheses)
 - [ ] Numbers keep the two regimes labeled (server/MTP-on vs llama-bench MTP-off)
 - [ ] No absolute paths, machine names, or credentials
 - [ ] Result files updated if prose changed; receipts attached

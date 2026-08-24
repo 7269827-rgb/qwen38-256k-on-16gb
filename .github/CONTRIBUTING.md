@@ -10,8 +10,8 @@ contributions look a little different from a typical software project.
    useful. Open an issue titled `Replication: <hardware>` with the
    numbers and your launch flags.
 2. **Corrections to the measurement record.** If a result file or the
-   README table disagrees with what you can reproduce, tell us. Result
-   files outrank prose; we will fix the prose.
+   README table disagrees with what you can reproduce, tell me. Result
+   files outrank prose; I will fix the prose.
 3. **New measurement points.** Different depths, different KEEP values,
    different quant maps, different backends. Add the JSON receipt under
    `results/` in the same shape as the existing files and document how
@@ -27,7 +27,6 @@ contributions look a little different from a typical software project.
 
 ## Ground rules
 
-- No em dashes in any file. Use commas, periods, parentheses.
 - Keep the two number regimes labeled: server/MTP-on (real usage) and
   llama-bench MTP-off (comparability). Never conflate them.
 - Never present a single best run (46.16 t/s) as the sustained bar. The
