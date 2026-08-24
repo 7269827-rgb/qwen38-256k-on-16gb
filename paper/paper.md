@@ -218,6 +218,29 @@ contribution.
   nearly overlap: the skip is neutral on the raw path).
 - The raw CSVs behind all three figures are included in the repo.
 
+## 4.1 Peer context (verified at source, 2026-08-24)
+
+Checked the public record before publishing: community benchmark tables
+(the sudoingX/qwen38-mtp table and its radeon sweep notes), Hugging Face
+model cards, r/LocalLLaMA, and Chinese community boards.
+
+- At true 200k resident on a single 16 GB AMD card with quality gates:
+  no published result matches 46.16 t/s plus multi-hop 3/3 plus GSM8K
+  144/150 plus depth-GSM8K 29/30.
+- The closest single-16GB peers all measure at much shallower depth:
+  an RX 7900 GRE 16 GB row reports 47.8 t/s average but at 29-37k
+  context only (5-6x shallower), and a reported RX 9070 XT at 46 t/s
+  was measured at 32k context.
+- Higher-VRAM cards (RTX 5090 32 GB, RTX 4090 24 GB, RX 7900 XTX
+  24 GB) beat this work on raw short-context speed. That is expected and
+  not a claim to the contrary: the differentiator here is depth (200k
+  resident) without collapsing speed, via the selective-attention
+  tile-skip, with quality gates intact, on the smallest VRAM tier.
+
+Sources: github.com/sudoingX/qwen38-mtp (community table and
+sweeps/radeon.md), the kbin post by cicadagen (32k context stated),
+and the sudoingX table's 4090/5090 rows.
+
 ## 5. Discussion
 
 For local AI, the combination (placement-aware quantization plus
