@@ -21,7 +21,7 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
 
 | File | What it is |
 |---|---|
-| `pareto-screen-c1..c5.json` | The gate screen: 5 runs at 40k resident / 256k alloc. 4th-best-of-5 = 56.6 t/s (run c1 here shows the 3-run mean 56.6, cache-hit mean 58.1). |
+| `pareto-screen-c1..c5.json` | The gate screen: 5 fresh launches at 40k resident / 256k alloc. Cache-hit means 60.4/58.1/57.3/56.6/54.5; 4th-best-of-5 = 56.6 t/s (the README headline). `cacheHitMean` = mean of the cache-hit runs in that file. |
 | `sustained-pareto256.json` | 20-minute sustained floor at working depth: rolling-median floor 58.5 t/s, pass. |
 | `bench-r6l2-mh-K30.json` | The K30 ladder winner: 3 multi-hop runs at 199.7k resident with the selective-skip at KEEP=30. 46.16 t/s peak, 3/3 retrieval PASS. |
 | `bench-r6l2-mh-STOCK.json` | Same ladder arm with selection OFF (dense): ~33 t/s, 3/3 PASS. The stock anchor. |
