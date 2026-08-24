@@ -109,3 +109,32 @@ paper/LICENSE). Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0),
 Unsloth's GGUF pipeline. Credit: the human (the thesis + oversight),
 four AI assistants by role, and the Chinese selective-attention research
 community.
+
+## How to cite
+
+If this work is useful to you, a citation or a link back is appreciated
+(no formal DOI yet; the repo is the canonical reference).
+
+Plain-text citation:
+
+```
+Kindadodgy. (2026). 256k context on a 16 GB GPU - Qwen3.8-27B,
+quality-gated, measured. GitHub repository.
+https://github.com/7269827-rgb/qwen38-256k-on-16gb
+```
+
+BibTeX:
+
+```bibtex
+@misc{kindadodgy2026qwen38256k,
+  title = {256k context on a 16 GB GPU - {Qwen3.8-27B}, quality-gated, measured},
+  author = {Kindadodgy},
+  year = {2026},
+  howpublished = {\url{https://github.com/7269827-rgb/qwen38-256k-on-16gb}},
+  note = {Single-rig measurements; all receipts in the repository}
+}
+```
+
+If you publish numbers from this repo, please state the two number
+regimes (server/MTP-on vs llama-bench MTP-off) as labeled here, and do
+not present a single best run as the sustained bar.

@@ -1,0 +1,9 @@
+{
+  "model": "qwen3.8-27b",
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "sampled": 150,
+  "correct": 144,
+  "score": "96.0",
+  "avgTime": "8.7",
+  "paced": true
+}

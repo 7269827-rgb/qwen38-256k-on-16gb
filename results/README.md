@@ -28,7 +28,8 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
 | `bench-r6-keepall.json` | Keep-all control: selector machinery with KEEP=100 (no skipping). 33.00 t/s mean vs 32.87 stock = zero fixed tax. |
 | `bench-r6op-mh.json` | Operating-point battery at K30 on a fresh boot: 44.6 t/s mean, 3/3 PASS. |
 | `bench-depth-gsm8k.json` | Depth-GSM8K at 199.7k resident, selection ACTIVE: 29/30 (96.7%). Per-problem `genPerS` included (39-46 t/s band). |
-| `gsm8k-pareto64.json` | Base GSM8K (selection inactive, bare questions): 142/150 (94.7%). NOT a selectivity receipt. |
+| `bench-r6op-gsm8k.json` | K30 operating-battery GSM8K (selection inactive on bare questions): 144/150 (96.0%). The strongest base-GSM8K receipt. NOT a selectivity receipt. |
+| `gsm8k-pareto64.json` | Gate-era base GSM8K (selection inactive, bare questions): 142/150 (94.7%). NOT a selectivity receipt. |
 
 ## llama-bench files (MTP off, community protocol)
 
