@@ -1,0 +1,220 @@
+{
+  "model": "qwen3.8-27b",
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "depthCached": "fill-verified (199.7k)",
+  "sampled": 30,
+  "correct": 29,
+  "score": "96.7",
+  "results": [
+    {
+      "ok": true,
+      "got": "9",
+      "expected": "9",
+      "promptN": 605,
+      "genPerS": 41.51630313288411
+    },
+    {
+      "ok": true,
+      "got": "5",
+      "expected": "5",
+      "promptN": 499,
+      "genPerS": 41.166036284815064
+    },
+    {
+      "ok": true,
+      "got": "68",
+      "expected": "68",
+      "promptN": 487,
+      "genPerS": 44.12931039144094
+    },
+    {
+      "ok": true,
+      "got": "9",
+      "expected": "9",
+      "promptN": 516,
+      "genPerS": 40.53265285470917
+    },
+    {
+      "ok": false,
+      "got": "210",
+      "expected": "310",
+      "promptN": 481,
+      "genPerS": 42.993670178935
+    },
+    {
+      "ok": true,
+      "got": "10",
+      "expected": "10",
+      "promptN": 519,
+      "genPerS": 43.59432605406645
+    },
+    {
+      "ok": true,
+      "got": "140",
+      "expected": "140",
+      "promptN": 509,
+      "genPerS": 42.621616006722576
+    },
+    {
+      "ok": true,
+      "got": "16",
+      "expected": "16",
+      "promptN": 475,
+      "genPerS": 42.72910521700509
+    },
+    {
+      "ok": true,
+      "got": "168",
+      "expected": "168",
+      "promptN": 504,
+      "genPerS": 41.70299822357913
+    },
+    {
+      "ok": true,
+      "got": "60",
+      "expected": "60",
+      "promptN": 503,
+      "genPerS": 43.41969908965184
+    },
+    {
+      "ok": true,
+      "got": "50",
+      "expected": "50",
+      "promptN": 530,
+      "genPerS": 39.07308924706157
+    },
+    {
+      "ok": true,
+      "got": "80",
+      "expected": "80",
+      "promptN": 510,
+      "genPerS": 40.30790975153849
+    },
+    {
+      "ok": true,
+      "got": "500",
+      "expected": "500",
+      "promptN": 479,
+      "genPerS": 42.1927375812365
+    },
+    {
+      "ok": true,
+      "got": "1",
+      "expected": "1",
+      "promptN": 489,
+      "genPerS": 39.268566706195045
+    },
+    {
+      "ok": true,
+      "got": "9",
+      "expected": "9",
+      "promptN": 484,
+      "genPerS": 45.773186604741184
+    },
+    {
+      "ok": true,
+      "got": "9",
+      "expected": "9",
+      "promptN": 498,
+      "genPerS": 39.247132952338816
+    },
+    {
+      "ok": true,
+      "got": "14",
+      "expected": "14",
+      "promptN": 522,
+      "genPerS": 40.25142752805823
+    },
+    {
+      "ok": true,
+      "got": "5",
+      "expected": "5",
+      "promptN": 472,
+      "genPerS": 40.973024288499566
+    },
+    {
+      "ok": true,
+      "got": "12",
+      "expected": "12",
+      "promptN": 525,
+      "genPerS": 40.55762069566901
+    },
+    {
+      "ok": true,
+      "got": "21",
+      "expected": "21",
+      "promptN": 483,
+      "genPerS": 46.45877294947237
+    },
+    {
+      "ok": true,
+      "got": "71",
+      "expected": "71",
+      "promptN": 441,
+      "genPerS": 46.33993701078562
+    },
+    {
+      "ok": true,
+      "got": "48",
+      "expected": "48",
+      "promptN": 477,
+      "genPerS": 41.56979083071502
+    },
+    {
+      "ok": true,
+      "got": "55",
+      "expected": "55",
+      "promptN": 475,
+      "genPerS": 40.20518363782754
+    },
+    {
+      "ok": true,
+      "got": "13",
+      "expected": "13",
+      "promptN": 472,
+      "genPerS": 44.59511099184909
+    },
+    {
+      "ok": true,
+      "got": "56",
+      "expected": "56",
+      "promptN": 461,
+      "genPerS": 44.28908507886786
+    },
+    {
+      "ok": true,
+      "got": "44",
+      "expected": "44",
+      "promptN": 499,
+      "genPerS": 40.3783863368669
+    },
+    {
+      "ok": true,
+      "got": "79",
+      "expected": "79",
+      "promptN": 443,
+      "genPerS": 41.79504078621605
+    },
+    {
+      "ok": true,
+      "got": "110",
+      "expected": "110",
+      "promptN": 483,
+      "genPerS": 43.65697849112084
+    },
+    {
+      "ok": true,
+      "got": "155",
+      "expected": "155",
+      "promptN": 463,
+      "genPerS": 41.99149113906945
+    },
+    {
+      "ok": true,
+      "got": "13",
+      "expected": "13",
+      "promptN": 462,
+      "genPerS": 42.85310607627623
+    }
+  ]
+}

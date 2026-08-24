@@ -1,0 +1,24 @@
+{
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "docTokens": 244000,
+  "runs": [
+    {
+      "ok": true,
+      "genPerS": 43.226825213634264,
+      "promptN": 547,
+      "text": "Supervisor Okafor supervises Depot Theta and filed 14 maintenance reports during the quarter."
+    },
+    {
+      "ok": true,
+      "genPerS": 45.66583248682891,
+      "promptN": 4,
+      "text": "Okafor, 14."
+    },
+    {
+      "ok": true,
+      "genPerS": 44.89832067979748,
+      "promptN": 4,
+      "text": "Depot Theta is supervised by **Supervisor Okafor**, who filed **14 maintenance reports** during the quarter."
+    }
+  ]
+}

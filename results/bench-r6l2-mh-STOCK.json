@@ -1,0 +1,24 @@
+{
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "docTokens": 244000,
+  "runs": [
+    {
+      "ok": true,
+      "genPerS": 32.9007727733509,
+      "promptN": 547,
+      "text": "Okafor, 14"
+    },
+    {
+      "ok": true,
+      "genPerS": 33.2797598532529,
+      "promptN": 4,
+      "text": "Supervisor Okafor, 14 reports."
+    },
+    {
+      "ok": true,
+      "genPerS": 32.42376105849684,
+      "promptN": 4,
+      "text": "Supervisor Okafor; 14 maintenance reports."
+    }
+  ]
+}

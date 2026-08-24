@@ -1,0 +1,6 @@
+*.part
+*.log
+*.err
+*.out
+node_modules/
+.dsh/

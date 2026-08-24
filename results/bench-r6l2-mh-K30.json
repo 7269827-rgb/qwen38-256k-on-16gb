@@ -1,0 +1,24 @@
+{
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "docTokens": 244000,
+  "runs": [
+    {
+      "ok": true,
+      "genPerS": 45.360572164586976,
+      "promptN": 547,
+      "text": "**Supervisor Okafor** supervises Depot Theta, and that person filed **14** maintenance reports."
+    },
+    {
+      "ok": true,
+      "genPerS": 44.91488978553701,
+      "promptN": 4,
+      "text": "Based on the document:\n\n**Supervisor:** Okafor\n\n**Number of maintenance reports filed:** 14\n\nThe document states: \"Depot Theta was assigned to supervisor Okafor\" and \"Supervisor Okafor filed exactly 1"
+    },
+    {
+      "ok": true,
+      "genPerS": 48.19954298945214,
+      "promptN": 4,
+      "text": "Based on the document provided, the supervisor is **Okafor**, and the number of maintenance reports filed is **14**."
+    }
+  ]
+}

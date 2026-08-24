@@ -1,0 +1,36 @@
+{
+  "endpoint": "http://127.0.0.1:8090/v1",
+  "docTokens": 244000,
+  "runs": [
+    {
+      "ok": true,
+      "genPerS": 33.621058815618575,
+      "promptN": 547,
+      "text": "Supervisor Okafor, 14."
+    },
+    {
+      "ok": true,
+      "genPerS": 30.606420191400588,
+      "promptN": 4,
+      "text": "Okafor; 14."
+    },
+    {
+      "ok": true,
+      "genPerS": 33.66078229223665,
+      "promptN": 4,
+      "text": "Depot Theta is supervised by Okafor, who filed 14 maintenance reports during the quarter."
+    },
+    {
+      "ok": true,
+      "genPerS": 34.329050500391766,
+      "promptN": 4,
+      "text": "Supervisor Okafor; 14 maintenance reports."
+    },
+    {
+      "ok": true,
+      "genPerS": 32.76778103728511,
+      "promptN": 4,
+      "text": "Based on the document:\n\n- **Depot Theta** is supervised by **Okafor** (assigned in the spring reassignment).\n- **Supervisor Okafor** filed **14** maintenance reports during the quarter.\n\n**Name:** Oka"
+    }
+  ]
+}
