@@ -28,8 +28,10 @@ Two regimes exist and must never be conflated:
      (`results/sustained-pareto256.json`).
    - 200k resident: 46.16 t/s measured best (ladder), 44.6 fresh boot,
      ~42 sustained. Stock (no skip) ~33 t/s.
-     Receipts: `results/bench-r6l2-mh-K30.json`, `bench-r6op-mh.json`,
-     `bench-r6l2-mh-STOCK.json`.
+     Receipts: `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`
+     (short probes), `results/bench-depth-gsm8k.json` (sustained: its 30
+     per-problem gen speeds average 42.21 t/s),
+     `results/bench-r6l2-mh-STOCK.json`.
 2. llama-bench path, MTP OFF (community raw-decode curve, comparable to
    other cards' published results): stock 45.3@4k -> 28.3@200k; K30
    identical within 0.1 t/s at every depth. The selective-skip gain does

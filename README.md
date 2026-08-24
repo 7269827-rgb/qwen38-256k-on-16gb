@@ -23,7 +23,7 @@ measurement data and a reproducible recipe are in this repo.
 |---|---|---|
 | Gate speed (256k allocated, 40k resident) | **56.6 t/s** (4th-best of 5) | `results/pareto-screen-c1..c5.json` |
 | Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` |
-| **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json` |
+| **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
 | 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
 | Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
 | Long-context retrieval | **PASS at 200k** (multi-hop 3/3, smoke-scale) | `results/bench-r6l2-mh-K30.json` |
