@@ -104,6 +104,11 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 - `paper/` - the arXiv-track paper draft (`paper.md`) + figures and the
   raw CSVs behind them.
 - `notes/caveats.md` - the honest box; read before quoting numbers.
+- `.github/` - community health files: CODE_OF_CONDUCT, CONTRIBUTING,
+  SECURITY. If an agent or human wants to contribute, CONTRIBUTING.md has
+  the ground rules (including: no em dashes, receipts required).
+- `paper/LICENSE` - the paper text and figures are CC-BY-4.0; the root
+  LICENSE (MIT) covers code and configs. Cite accordingly.
 
 ## Truth hierarchy
 

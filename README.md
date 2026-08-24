@@ -85,7 +85,8 @@ Four measured findings:
 
 ## License
 
-MIT (code/configs) · CC-BY (paper text + figures). Built with llama.cpp,
-Qwen3.8-27B (Apache-2.0), Unsloth's GGUF pipeline. Credit: the human (the
-thesis + oversight), four AI assistants by role, and the Chinese
-selective-attention research community.
+MIT (code/configs, see LICENSE) · CC-BY-4.0 (paper text + figures, see
+paper/LICENSE). Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0),
+Unsloth's GGUF pipeline. Credit: the human (the thesis + oversight),
+four AI assistants by role, and the Chinese selective-attention research
+community.

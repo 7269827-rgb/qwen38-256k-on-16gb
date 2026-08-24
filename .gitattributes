@@ -1,0 +1,25 @@
+# .gitattributes - normalization + linguist hints
+# Normalize line endings: store LF, check out native on Windows.
+* text=auto
+
+# Shell repro scripts must stay LF everywhere (bash on Linux/macOS).
+*.sh text eol=lf
+
+# Text formats: LF, UTF-8.
+*.md text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binaries - never touch.
+*.png binary
+*.gguf binary
+
+# Linguist: mark docs and data so the language badge reflects the code.
+# Markdown is prose and JSON is data: both are excluded from language
+# stats by linguist by default. The repro scripts remain the detectable
+# code (Shell), which is accurate.
+docs/** linguist-documentation
+*.md linguist-documentation
