@@ -29,6 +29,7 @@ protocol v2 (fill to depth, then measure generation on short follow-ups).
 | `bench-r6op-mh.json` | Operating-point battery at K30 on a fresh boot: 44.6 t/s mean, 3/3 PASS. |
 | `bench-depth-gsm8k.json` | Depth-GSM8K at 199.7k resident, selection ACTIVE: 29/30 (96.7%). Per-problem `genPerS` included (39-46 t/s band). |
 | `bench-r6op-gsm8k.json` | K30 operating-battery GSM8K (selection inactive on bare questions): 144/150 (96.0%). The strongest base-GSM8K receipt. NOT a selectivity receipt. |
+| `bench-longbench-v2.json` | LongBench v2, short/medium subset (25 q, seed-42 deterministic sample, thinking off, temperature 0): 14/25 (56%). Single rig, K30 operating point. Hard bilingual MC benchmark; contexts up to ~46k words. |
 | `gsm8k-pareto64.json` | Gate-era base GSM8K (selection inactive, bare questions): 142/150 (94.7%). NOT a selectivity receipt. |
 
 ## llama-bench files (MTP off, community protocol)

@@ -1,0 +1,262 @@
+{
+ "endpoint": "http://127.0.0.1:8090/v1",
+ "model": "qwen3.8-27b",
+ "sampled": 25,
+ "completed": 25,
+ "correct": 14,
+ "score": "0.560",
+ "generated": "2026-08-24T04:40:57.144Z",
+ "partial": false,
+ "results": [
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "B",
+   "got": "B",
+   "correct": true,
+   "answer": "**B**\n\n**Reasoning:**\nThe paper states in Section VII-B: \"Intuitively, any trained model should perform better when the "
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "C"
+  },
+  {
+   "domain": "Long In-context Learning",
+   "sub_domain": "User guide QA",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "C",
+   "got": "A",
+   "correct": false,
+   "answer": "Based on the \"Advanced RTH\" section of the manual, the Return to Home (RTH) function is triggered by three methods:\n1.  "
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "D",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "B",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "D",
+   "got": "D",
+   "correct": true,
+   "answer": "D"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "D",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Legal",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "B",
+   "got": "D",
+   "correct": false,
+   "answer": "D"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Legal",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "D",
+   "got": "D",
+   "correct": true,
+   "answer": "D"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Legal",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "C"
+  },
+  {
+   "domain": "Long In-context Learning",
+   "sub_domain": "User guide QA",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "D",
+   "got": "A",
+   "correct": false,
+   "answer": "Based on the provided user guide for the AP80R digital piano:\n\n**Statement A is incorrect.**\n*   The manual states that "
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Legal",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "C",
+   "got": "B",
+   "correct": false,
+   "answer": "B"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Multi-news",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "C"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "A",
+   "got": "A",
+   "correct": true,
+   "answer": "A"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Financial",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "Based on the provided text, specifically the section \"Lessons from History; the Market Risks and Opportunities in AI,\" t"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "medium",
+   "expected": "D",
+   "got": "D",
+   "correct": true,
+   "answer": "D"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Multi-news",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "C",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "medium",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "C"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "D",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Multi-news",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "D",
+   "got": "D",
+   "correct": true,
+   "answer": "D"
+  },
+  {
+   "domain": "Multi-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "hard",
+   "len": "short",
+   "expected": "B",
+   "got": "B",
+   "correct": true,
+   "answer": "B"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Financial",
+   "difficulty": "easy",
+   "len": "medium",
+   "expected": "D",
+   "got": "D",
+   "correct": true,
+   "answer": "D"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "C",
+   "got": "B",
+   "correct": false,
+   "answer": "B"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Legal",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "C",
+   "got": "C",
+   "correct": true,
+   "answer": "C"
+  },
+  {
+   "domain": "Single-Document QA",
+   "sub_domain": "Academic",
+   "difficulty": "easy",
+   "len": "short",
+   "expected": "B",
+   "got": "A",
+   "correct": false,
+   "answer": "A"
+  }
+ ]
+}

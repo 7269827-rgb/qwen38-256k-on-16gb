@@ -42,8 +42,10 @@ Quality at 200k (selection active): depth-GSM8K 29/30 (96.7%),
 `results/bench-depth-gsm8k.json`. Base GSM8K (selection inactive):
 144/150 at K30, `results/bench-r6op-gsm8k.json` (strongest receipt;
 a gate-era 142/150 also exists at `results/gsm8k-pareto64.json`).
-Multi-hop retrieval at 200k: 3/3 PASS, but N=3 is a smoke test, not a
-certification. Draft acceptance 0.91-0.94.
+LongBench v2 (short/medium subset, 25 q, thinking off): 14/25 (56%),
+`results/bench-longbench-v2.json`. Multi-hop retrieval at 200k: 3/3
+PASS, but N=3 is a smoke test, not a certification. Draft acceptance
+0.91-0.94.
 
 Keep-all control: 33.00 t/s vs 32.87 stock = zero fixed tax
 (`results/bench-r6-keepall.json`).

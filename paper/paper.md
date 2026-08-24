@@ -287,9 +287,11 @@ known dual-RDNA4 rig at comparable depth (~21 t/s/GPU at 98k).
    selector masking policy for the draft path is documented, but the
    interaction is only bounded by acceptance receipts, not exhaustively
    mapped.
-10. RULER and LongBench v2 are the next benchmark steps; the quality
-    story here rests on depth-GSM8K at 200k, base GSM8K, and the
-    multi-hop smoke test.
+10. LongBench v2 was run on a 25-question short/medium subset at the
+    K30 operating point (14/25 = 56%; contexts up to ~46k words, thinking
+    off, temperature 0). RULER is the next benchmark step; the quality
+    story rests on depth-GSM8K at 200k, base GSM8K, the multi-hop smoke
+    test, and the LongBench subset.
 
 ## 7. Related work
 
