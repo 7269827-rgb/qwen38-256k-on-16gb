@@ -22,8 +22,7 @@ measurement data and a reproducible recipe are in this repo.
 | What | Number | How it was measured |
 |---|---|---|
 | Gate speed (256k allocated, 40k resident) | **56.6 t/s** (4th-best of 5) | `results/pareto-screen-c1..c5.json` |
-| Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` |
-| **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
+| Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` || **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
 | 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
 | Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
 | Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` |
@@ -35,6 +34,15 @@ measurement data and a reproducible recipe are in this repo.
 LongBench v2 is a supporting signal (hard bilingual MC benchmark, easy
 subset, N=25). The primary quality story is depth-GSM8K at 200k plus
 the multi-hop smoke test; see the paper for full context.
+
+Build qualifier on the working-depth numbers: the gate rows above
+(56.6/58.5 at 40k resident) were measured on the gate-era build (b10502
+lineage, pareto blob, q8_0 draft KV). The selective-skip build (the
+46.16/44.6/~42 rows) is a different binary; its own shallow-depth
+measurements are the labeled SANITY cells (60-71 t/s at 5k resident,
+results/bench-r6-SANITY-* equivalents in the measurement record), with
+a clean working-depth cell pending. We do not present the gate number
+as measured by the selective-skip build.
 
 Numbers are the sanctioned set; result files outrank prose. Every number
 in the table has its receipt in `results/`.
@@ -76,6 +84,17 @@ Same command plus two env vars (GGML_VK_FA_SELECT_KEEP=30,
 GGML_VK_FA_SELECT_MINKV=32768). Requires the custom llama.cpp build
 (commit bf0040e15) whose mechanism is documented in `patches/`. Gives
 ~42-46 t/s at 200k resident with quality intact.
+
+Three things to know before Path B:
+- It is a patched llama.cpp build: upstream llama.cpp does not have
+  GGML_VK_FA_SELECT_KEEP. The mechanism is reconstructed in `patches/`
+  (behavior-equivalent; the exact build-machine diff was not archived).
+- Deep fills must be chunked, not single-shot prefilled (one documented
+  98C thermal event during a single-shot 200k fill; the repro scripts
+  use the chunked loader).
+- Receipts are gfx1201/RDNA4/Windows only. Other GPUs and OSes are
+  untested; expect different numbers (mask_opt availability differs by
+  architecture).
 
 Most users will start with Path A; Path B is the frontier config.
 

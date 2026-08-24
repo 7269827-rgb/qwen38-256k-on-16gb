@@ -11,14 +11,17 @@ was NOT preserved. The selector shipped as an assembled binary
 (`llama-server-v02-select-r6.exe`); only its parts manifests and SHA256
 survive on disk. The binary is the source of record for every number in
 `results/` - the measurements stand on their own regardless of this
-file. This reconstruction is written from the project's build and
-design notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0
-build request, and the paper methods section) against the same llama.cpp
-base (b10537-era, commit bf0040e15), using the documented code
-locations and mechanism. It is intended for maintainers and reviewers
-to verify the approach. Anyone rebuilding from this reconstruction MUST
-re-run the quality gates (below) before trusting it; the numbers here
-were produced by the shipped binary, not by this reconstruction.
+file. This reconstruction is behavior-equivalent to the documented
+mechanism but is NOT the literal build diff: it is written from the
+project's build and design notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md,
+the Phase-0 build request, and the paper methods section) against the
+same llama.cpp base (b10537-era, commit bf0040e15), using the documented
+code locations and mechanism. It is intended for maintainers and
+reviewers to verify the approach. Anyone rebuilding from this
+reconstruction MUST re-run the quality gates (below) before trusting it;
+the numbers here were produced by the shipped binary, not by this
+reconstruction. Do not diff this file against the binary and expect a
+literal match.
 
 ## What it does (one paragraph)
 

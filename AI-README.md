@@ -25,7 +25,11 @@ Two regimes exist and must never be conflated:
    used, the headline):
    - Gate (256k alloc, 40k resident): 56.6 t/s 4th-best-of-5
      (`results/pareto-screen-c1..c5.json`), 20-min floor 58.5 t/s
-     (`results/sustained-pareto256.json`).
+     (`results/sustained-pareto256.json`). BUILD QUALIFIER: these gate
+     numbers were measured on the gate-era b10502-lineage build; the
+     selective-skip build's own working-depth cell is pending (its
+     shallow evidence is the SANITY cells, 60-71 t/s at 5k). Do not
+     present the gate number as measured by the selective-skip build.
    - 200k resident: 46.16 t/s measured best (ladder), 44.6 fresh boot,
      ~42 sustained. Stock (no skip) ~33 t/s.
      Receipts: `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`
