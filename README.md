@@ -15,6 +15,9 @@ measurement data and a reproducible recipe are in this repo.
   [Security](.github/SECURITY.md) · [Author's note](#a-note-from-the-author)
 - **AI agents / tools:** read [AI-README.md](AI-README.md) first for a
   compressed briefing and the rules for quoting these numbers.
+- **Status:** measurements complete, repo maintained, paper draft in
+  review. Replication reports and corrections are welcome (see
+  Contributing).
 
 | What | Number | How it was measured |
 |---|---|---|
