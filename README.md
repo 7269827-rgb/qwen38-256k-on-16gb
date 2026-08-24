@@ -1,10 +1,20 @@
 # 256k context on a 16 GB GPU - Qwen3.8-27B, quality-gated, measured
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Paper: CC-BY-4.0](https://img.shields.io/badge/paper-CC--BY--4.0-lightgrey.svg)](paper/LICENSE)
+[![llama.cpp](https://img.shields.io/badge/llama.cpp-Vulkan-8A2BE2.svg)](https://github.com/ggml-org/llama.cpp)
+
 Qwen3.8-27B (27B params, 262k native context) at **50+ tokens/s at working
 depth with a full 256k allocation**, and **~42-46 t/s at 200k resident with
 a selective-attention skip**, on a **16 GB AMD RX 9070 XT** (Windows,
 llama.cpp Vulkan) - while holding quality on real long-context tasks. Full
 measurement data and a reproducible recipe are in this repo.
+
+- **Community:** [Contributing](.github/CONTRIBUTING.md) ·
+  [Code of Conduct](.github/CODE_OF_CONDUCT.md) ·
+  [Security](.github/SECURITY.md) · [Author's note](#a-note-from-the-author)
+- **AI agents / tools:** read [AI-README.md](AI-README.md) first for a
+  compressed briefing and the rules for quoting these numbers.
 
 | What | Number | How it was measured |
 |---|---|---|
