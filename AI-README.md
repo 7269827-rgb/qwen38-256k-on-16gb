@@ -17,6 +17,16 @@ selective-attention tile-skip mechanism. The repo contains the measured
 numbers, the exact quant map, the launch flags, and the reproduce scripts.
 Everything here is one rig, n=1 sessions.
 
+REPRODUCIBILITY WARNING (read before quoting any speed number): the
+fast speeds above are campaign-session measurements from FAST-state-
+classified launches. This rig has a documented bistable fast/slow
+driver state. A fresh launch measured ~24-29 t/s at shallow context in
+our post-publication check (results/protocol-vs-state-2026-08-24.json,
+results/working-depth-clean-cell-2026-08-24.json), UNCLASSIFIED as to
+state. Quality results and the llama-bench raw curve are reproducible;
+the fast speed numbers are not guaranteed on a fresh launch. See the
+README "What you should expect to reproduce" section.
+
 ## The numbers (sanctioned set; do not alter)
 
 Two regimes exist and must never be conflated:

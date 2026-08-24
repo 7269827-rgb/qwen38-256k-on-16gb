@@ -22,7 +22,8 @@ measurement data and a reproducible recipe are in this repo.
 | What | Number | How it was measured |
 |---|---|---|
 | Gate speed (256k allocated, 40k resident) | **56.6 t/s** (4th-best of 5) | `results/pareto-screen-c1..c5.json` |
-| Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` || **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
+| Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` |
+| **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
 | 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
 | Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
 | Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` |
@@ -34,6 +35,36 @@ measurement data and a reproducible recipe are in this repo.
 LongBench v2 is a supporting signal (hard bilingual MC benchmark, easy
 subset, N=25). The primary quality story is depth-GSM8K at 200k plus
 the multi-hop smoke test; see the paper for full context.
+
+## What you should expect to reproduce (read this first)
+
+The numbers above are the measured campaign results. They are real
+receipts, but they are not all reproducible on demand on every launch,
+and you should know exactly which ones are:
+
+- **Reliable and reproducible:** quality results (depth-GSM8K 29/30,
+  GSM8K 144/150, multi-hop, LongBench 14/25) and the llama-bench raw
+  curve (45.3@4k to 28.3@200k, MTP off). These do not depend on the
+  speed state.
+- **Measured in campaign sessions, state-dependent:** the fast speeds
+  (56.6/58.5 gate, 60-71 SANITY @5k, 42-46 @200k). This rig has a
+  documented bistable fast/slow driver state. Those numbers came from
+  FAST-state-classified sessions. A fresh launch can land in either
+  state.
+- **What a fresh launch measured on our own post-publication check:**
+  ~24-29 t/s at shallow context, both with and without loaded cache
+  (results/protocol-vs-state-2026-08-24.json and
+  results/working-depth-clean-cell-2026-08-24.json). This reading is
+  UNCLASSIFIED: it may be slow state, or the fast numbers may have
+  depended on conditions we cannot reproduce. We are reporting this
+  rather than hiding it.
+
+The honest headline: this model runs on a 16 GB card with a 256k
+allocation and quality held at depth. Speed varies by launch state on
+this single rig; treat the fast numbers as best-case campaign
+measurements, not a guarantee. If you want the speed story made
+reproducible, that is open work (see `notes/caveats.md` and the
+selective-skip patch in `patches/`).
 
 Build qualifier on the working-depth numbers: the gate rows above
 (56.6/58.5 at 40k resident) were measured on the gate-era build (b10502
