@@ -57,6 +57,15 @@ Four measured findings:
    (GGML_VK_FA_SELECT_KEEP=30 GGML_VK_FA_SELECT_MINKV=32768).
 4. `repro/04-probe.sh` - reproduce the gate cells + the 200k K30 ladder.
 
+## A note from the author
+
+This is my only GPU, and I am still paying it off. It is also my school
+and everything rig, so I could not go as deep into this as I wanted.
+I left all the data and receipts here so people can improve on this and
+do not waste time on ground we already covered. I hope this helps people
+who cannot afford a big rig, and I welcome feedback and replication. If
+something here is wrong, show me the receipt and I will fix it.
+
 ## Honest caveats (read before quoting numbers)
 
 - One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003, llama.cpp

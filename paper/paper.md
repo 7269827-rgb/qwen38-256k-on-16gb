@@ -300,6 +300,17 @@ MagicDec (arXiv 2408.11049) for selective drafting at depth.
 
 ---
 
+## A note from the author
+
+This is my only GPU, and I am still paying it off. It is also my school
+and everything rig, so I could not go as deep into this as I wanted.
+I left all the data and receipts here so people can improve on this and
+do not waste time on ground we already covered. I hope this helps people
+who cannot afford a big rig, and I welcome feedback and replication. If
+something here is wrong, show me the receipt and I will fix it.
+
+---
+
 ## Receipts
 
 Every number above traces to a data file in this repo's ../results/ (see esults/README.md for the field explainer). Companion decision-log documents referenced by name (verdicts, audits, negative results) live in the private research archive and will be published alongside the arXiv submission; the data files themselves are all public here.
