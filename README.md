@@ -26,8 +26,7 @@ measurement data and a reproducible recipe are in this repo.
 | **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
 | 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
 | Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
-| Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` |
-| Long-context retrieval | **PASS at 200k** (multi-hop 3/3, smoke-scale) | `results/bench-r6l2-mh-K30.json` |
+| Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` || Long-context retrieval | **PASS at 200k** (multi-hop 3/3, smoke-scale) | `results/bench-r6l2-mh-K30.json` |
 | Supporting: LongBench v2 subset (short/medium, 25 q) | **14/25 (56%)** | `results/bench-longbench-v2.json` |
 | llama-bench raw curve (MTP off) | 45.3@4k -> 28.3@200k | `results/bench-lb-depth-*.json` |
 | Model footprint | **8.66 GiB, 2.72 BPW** | `configs/pareto-map.txt` |
@@ -35,6 +34,13 @@ measurement data and a reproducible recipe are in this repo.
 LongBench v2 is a supporting signal (hard bilingual MC benchmark, easy
 subset, N=25). The primary quality story is depth-GSM8K at 200k plus
 the multi-hop smoke test; see the paper for full context.
+
+Note on the sustained number: the "~42 sustained at 200k" figure is the
+mean over 30 depth-GSM8K per-problem speeds (receipt
+`results/bench-depth-gsm8k.json`), reported as a proxy. A formal
+20-minute rolling-median floor at K30/200k was not run; if you quote
+the sustained number, say it is a per-problem proxy, not a measured
+floor.
 
 ## What you should expect to reproduce (read this first)
 
