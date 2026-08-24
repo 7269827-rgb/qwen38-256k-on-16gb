@@ -225,8 +225,9 @@ Checked the public record before publishing: community benchmark tables
 model cards, r/LocalLLaMA, and Chinese community boards.
 
 - At true 200k resident on a single 16 GB AMD card with quality gates:
-  no published result matches 46.16 t/s plus multi-hop 3/3 plus GSM8K
-  144/150 plus depth-GSM8K 29/30.
+  no published result matches 46.16 t/s plus multi-hop 3/3 at depth plus
+  depth-GSM8K 29/30 with selection active (GSM8K 144/150 on bare
+  questions is a build-regression check, not a selectivity receipt).
 - The closest single-16GB peers all measure at much shallower depth:
   an RX 7900 GRE 16 GB row reports 47.8 t/s average but at 29-37k
   context only (5-6x shallower), and a reported RX 9070 XT at 46 t/s
