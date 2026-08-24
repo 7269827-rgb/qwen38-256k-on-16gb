@@ -143,8 +143,10 @@ Reproduce the gate cells and the K30 ladder: `repro/04-probe.sh`.
 - The 2-bit quant is a real quality cliff; quality is held by localizing
   the damage (q2_K only on FFN gate/up), not by claiming 2-bit is
   lossless.
-- Credit: the human (thesis: GPU bandwidth underutilization, ~250 vs 640
-  GB/s peak, software not physics; oversight), DeepSeek-flash (execution),
+- Credit: the human (thesis: the llama.cpp Vulkan attention kernel on
+  this card underutilizes the available bandwidth, ~250 vs 640 GB/s
+  peak; a kernel-path limitation, not a claim about any vendor's
+  competence), DeepSeek-flash (execution),
   Claude/Fable (analysis, source-checking), Opus (early work, superseded),
   Ox Alpha (pre-registered decision logic), and the Chinese
   selective-attention research community (Quest/NSA lineage).
