@@ -34,78 +34,7 @@ measurement data and a reproducible recipe are in this repo.
 Numbers are the sanctioned set; result files outrank prose. Every number
 in the table has its receipt in `results/`.
 
-## The journey: what we found, what we changed, what came out
-
-Every claim below is a measured before/after, not an opinion. Each row
-has its receipt in `results/`.
-
-### 1. Selective tile-skip (the 200k mechanism)
-
-We found the depth wall is the attention re-read, not the math: every
-decode step scans the full KV once per verify batch, and the attention
-kernel ran at ~250 GB/s vs the card's ~640 GB/s peak (the thesis: the
-bottleneck is software, not physics). We changed the flash-attention
-tile loop to skip K/V tiles outside a relevance keep-set
-(GGML_VK_FA_SELECT_KEEP=30). Before/after at 199.7k resident,
-server/MTP path:
-
-| config | t/s | delta | quality |
-|---|---|---|---|
-| stock (dense) | 32.87 | - | multi-hop 3/3 |
-| keep-all control (KEEP=100) | 33.00 | +0.13 (zero fixed tax) | multi-hop 3/3 |
-| **K30 (the operating point)** | **46.16** | **+40.4%** | multi-hop 3/3, depth-GSM8K 29/30 |
-
-Receipts: `results/bench-r6l2-mh-STOCK.json`, `results/bench-r6-keepall.json`,
-`results/bench-r6l2-mh-K30.json`, `results/bench-depth-gsm8k.json`.
-
-### 2. Quantization placement (how it fits AND keeps quality)
-
-We found a full-2-bit blob is fast but collapses quality, and a
-quality-first blob is too slow. We changed the map so the aggressive 2-bit
-type sits only on the FFN gate/up tensors (the integer-dot MMVQ fast
-path) with iq2_xxs elsewhere. The frontier:
-
-| blob | t/s @64k | GSM8K | note |
-|---|---|---|---|
-| all-Q2_K | 60.3 | 101/150 | fastest, quality rejected |
-| gate-types-only (i-quant mix) | 49.2-50.3 | 145/150 | quality, slower |
-| **pareto (2.72 BPW)** | **56.6** | **142/150** | both, fits 16 GB |
-
-Receipts: `results/pareto-screen-c1..c5.json`, `results/sustained-pareto256.json`,
-`results/gsm8k-pareto64.json`.
-
-### 3. The MTP x allocation interaction (backend choice inverts a feature)
-
-We found MTP speculative decoding is not uniformly good: on HIP its
-benefit inverts with allocation. We ran the clean 2x2 and chose the
-Vulkan backend.
-
-| backend | alloc | MTP on | MTP off | MTP delta |
-|---|---|---|---|---|
-| HIP | 64k | 38.3 | 26.7 | +43% |
-| HIP | 256k | 12.6 | 26.6 | -53% |
-| **Vulkan** | **256k** | **37.4** | **33.6** | **+11%** |
-
-Receipt: this is a backend bake-off, not in `results/`; see the paper
-methods and the repo's measurement record.
-
-### 4. The failure record (what we tried that did not work)
-
-Five mechanisms were falsified with same-build measurements; each one
-redirected the work:
-
-| mechanism | measured outcome | receipt ref |
-|---|---|---|
-| draft-attention-window patch | NEUTRAL at 200k (~31.4 t/s, same band as stock; model attention is global, windows not honored) | W-patch-receipt (research archive) |
-| row-fused flash-attention kernel | REGRESSED -33% at 200k (20.2 vs stock, same build/day) | K2-VERDICT (research archive) |
-| token-packed flash attention | ENGAGED and NEGATIVE (-33%) | research archive |
-| scalar routing at batch 3 | NULL (no amortization) | research archive |
-| MAX_NODES dispatch theory | bistable-state mirage (+82% withdrawn after controlled rerun) | research archive |
-
-The decision-log method (publish the failures, not just the wins) is
-part of the contribution.
-
-### How it fits inside the card
+## How it fits inside the card
 
 16 GB must hold the weights AND the KV cache at 256k allocation. The
 math: the model is a hybrid, so only 16 of its 64 layers store
