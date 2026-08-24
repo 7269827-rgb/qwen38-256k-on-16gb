@@ -26,10 +26,15 @@ measurement data and a reproducible recipe are in this repo.
 | **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
 | 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
 | Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
-| LongBench v2 (short/medium subset, 25 q) | **14/25 (56%)** | `results/bench-longbench-v2.json` |
+| Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` |
 | Long-context retrieval | **PASS at 200k** (multi-hop 3/3, smoke-scale) | `results/bench-r6l2-mh-K30.json` |
+| Supporting: LongBench v2 subset (short/medium, 25 q) | **14/25 (56%)** | `results/bench-longbench-v2.json` |
 | llama-bench raw curve (MTP off) | 45.3@4k -> 28.3@200k | `results/bench-lb-depth-*.json` |
 | Model footprint | **8.66 GiB, 2.72 BPW** | `configs/pareto-map.txt` |
+
+LongBench v2 is a supporting signal (hard bilingual MC benchmark, easy
+subset, N=25). The primary quality story is depth-GSM8K at 200k plus
+the multi-hop smoke test; see the paper for full context.
 
 Numbers are the sanctioned set; result files outrank prose. Every number
 in the table has its receipt in `results/`.
@@ -92,16 +97,18 @@ something here is wrong, show me the receipt and I will fix it.
 
 ## Honest caveats
 
-- One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003, llama.cpp
-  custom build). Not leaderboard-comparable; llama-bench done, RULER
-  pending.
+- One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003; llama.cpp
+  custom build, commit bf0040e15 / b10537-era, with the selective-skip
+  selector; full identity in configs/blob-identity.md). Not
+  leaderboard-comparable; llama-bench done, RULER pending.
 - 50+ t/s is at working depth (<=64k resident). At 200k the honest number
   is ~42-46 with the skip (~33 stock); at full 250k resident ~27-32,
   limited by an upstream Vulkan attention-bandwidth issue (#26663 class).
 - Two number sets, both real: server/MTP (real usage, ~2.4-2.6x
   amplification) and llama-bench MTP-off (raw decode, comparable to other
   cards). Never conflate them.
-- Multi-hop N=3 is a smoke test, not a certification; large-N is pending.
+- Multi-hop N=3 is a smoke test, not a certification; a larger-N run
+  (N>=50 with paraphrase-gap needles) is planned.
 - 2-bit is a real quality cliff; I hold quality by localizing the damage.
 - Bistable fast/slow state (44.57 vs 32.67 = 1.36x) + ~20% sustained
   drift; all comparisons same-day, interleaved, cache-hit.
@@ -154,3 +161,21 @@ BibTeX:
 If you publish numbers from this repo, please state the two number
 regimes (server/MTP-on vs llama-bench MTP-off) as labeled here, and do
 not present a single best run as the sustained bar.
+
+## How to quote these numbers
+
+Three rules keep these numbers honest; the full brief is in
+[AI-README.md](AI-README.md) (the "Hard rules" section).
+
+1. **Always label the regime.** server/MTP-on (real usage) and
+   llama-bench MTP-off (comparability) are different numbers. Never
+   conflate them.
+2. **Never quote 46.16 as the sustained bar.** The honest set is 46.16
+   measured best, 44.6 fresh boot, ~42 sustained.
+3. **Quality claims at 200k come from depth-GSM8K 29/30 and the
+   multi-hop smoke test.** The base GSM8K 144/150 is a build check, not
+   a selectivity receipt, and LongBench 14/25 is supporting data on the
+   easy subset.
+
+Every number in the table above traces to a receipt in `results/`.
+Result files outrank prose.

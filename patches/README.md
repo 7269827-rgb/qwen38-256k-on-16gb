@@ -6,15 +6,19 @@ point, written from the campaign's build and design notes
 (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0 build request,
 and the paper methods section).
 
-IMPORTANT HONESTY NOTE: the exact diff from the build machine was not
-archived (the selector shipped as an assembled binary; only the parts
-manifests survive on disk). This reconstruction is written against the
-same llama.cpp base (b10537-era, commit bf0040e15) using the documented
-code locations and mechanism. It is intended for maintainers and
-reviewers to verify the approach; the shipped binary is the source of
-record for the measurements, and the numbers in results/ are what they
-are regardless of this file. If you rebuild from this reconstruction,
-re-run the quality gates (see below) before trusting it.
+IMPORTANT HONESTY NOTE: the exact source diff from the build machine
+was NOT preserved. The selector shipped as an assembled binary
+(`llama-server-v02-select-r6.exe`); only its parts manifests and SHA256
+survive on disk. The binary is the source of record for every number in
+`results/` - the measurements stand on their own regardless of this
+file. This reconstruction is written from the campaign's build and
+design notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0
+build request, and the paper methods section) against the same llama.cpp
+base (b10537-era, commit bf0040e15), using the documented code
+locations and mechanism. It is intended for maintainers and reviewers
+to verify the approach. Anyone rebuilding from this reconstruction MUST
+re-run the quality gates (below) before trusting it; the numbers here
+were produced by the shipped binary, not by this reconstruction.
 
 ## What it does (one paragraph)
 

@@ -59,8 +59,9 @@ Contributions:
   attention, with a pre-registered KEEP ladder, a keep-all control, and
   quality gating; this extends the prior selective-attention research
   lineage (Quest/NSA style, largely from the Chinese open-source
-  community) to an end-to-end consumer-Vulkan validation at 200k, which I
-  find unpublished anywhere.
+  community) to an end-to-end consumer-Vulkan validation at 200k. To my
+  knowledge, no prior end-to-end consumer-Vulkan validation at this
+  depth with quality gating has been published.
 - C3. A measured depth anatomy and pass-budget model for MTP decoding on
   this class (attention ~55-72% of the pass, batch-linear), predictive to
   ~1.5 tokens/s.
@@ -226,9 +227,10 @@ Checked the public record before publishing: community benchmark tables
 model cards, r/LocalLLaMA, and Chinese community boards.
 
 - At true 200k resident on a single 16 GB AMD card with quality gates:
-  no published result matches 46.16 t/s plus multi-hop 3/3 at depth plus
-  depth-GSM8K 29/30 with selection active (GSM8K 144/150 on bare
-  questions is a build-regression check, not a selectivity receipt).
+  to my knowledge, no published result matches 46.16 t/s plus multi-hop
+  3/3 at depth plus depth-GSM8K 29/30 with selection active (GSM8K
+  144/150 on bare questions is a build-regression check, not a
+  selectivity receipt).
 - The closest single-16GB peers all measure at much shallower depth:
   an RX 7900 GRE 16 GB row reports 47.8 t/s average but at 29-37k
   context only (5-6x shallower), and a reported RX 9070 XT at 46 t/s

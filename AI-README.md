@@ -52,12 +52,8 @@ Keep-all control: 33.00 t/s vs 32.87 stock = zero measurable fixed tax
 
 ## How to get the model
 
-Option A: download the exact blob. Filename `pareto-bf16.gguf`, 9,298,488,288
-bytes, SHA256 `57DDA505ECD2B0731341C002FF03EDE1526740DC899E6F840AE1DFB7F1B3FA81`.
-(Not published on Hugging Face at the time of writing; contact the author
-or rebuild per Option B.)
-
-Option B: rebuild from source (all inputs public, `repro/01-03`):
+Option B (recommended): rebuild from source - all inputs are public
+(`repro/01-03`):
 1. From `unsloth/Qwen3.8-27B-GGUF` on Hugging Face, get the BF16 base
    (`BF16/Qwen3.8-27B-BF16-00001-of-00002.gguf` + `-00002-of-00002.gguf`,
    LFS oids `b9966e82...` / `92e3943c...`), the imatrix
@@ -66,7 +62,12 @@ Option B: rebuild from source (all inputs public, `repro/01-03`):
 2. `llama-quantize <BF16-shard-1> pareto-bf16.gguf --allow-requantize
    --imatrix imatrix_unsloth.gguf --tensor-type-file configs/pareto-map.txt`
    (llama.cpp b10537-era; single quantization, no requantize of the base).
-3. Verify SHA256 against the value above.
+3. Verify SHA256 against the value below.
+
+Option A: download the exact blob. Filename `pareto-bf16.gguf`, 9,298,488,288
+bytes, SHA256 `57DDA505ECD2B0731341C002FF03EDE1526740DC899E6F840AE1DFB7F1B3FA81`.
+(Not published on Hugging Face at the time of writing; rebuild per
+Option B, or contact the author for a copy.)
 
 ## How to run it
 
