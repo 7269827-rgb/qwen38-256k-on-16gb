@@ -90,7 +90,7 @@ do not waste time on ground I already covered. I hope this helps people
 who cannot afford a big rig, and I welcome feedback and replication. If
 something here is wrong, show me the receipt and I will fix it.
 
-## Honest caveats (read before quoting numbers)
+## Honest caveats
 
 - One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003, llama.cpp
   custom build). Not leaderboard-comparable; llama-bench done, RULER
