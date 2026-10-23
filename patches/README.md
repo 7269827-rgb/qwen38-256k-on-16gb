@@ -1,57 +1,55 @@
-# Selective-attention tile-skip - source reconstruction
+# Selective-attention tile-skip — incomplete historical sketch
 
-This directory contains a faithful reconstruction of the source change
-behind the selective-attention tile-skip used for the K30 operating
-point, written from the project's build and design notes
-(PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md, the Phase-0 build request,
-and the paper methods section).
+> **Status correction — 2026-10-22:** `selective-skip.diff` is an incomplete
+> reconstruction from design notes. It is not the source used to produce the
+> reported measurements, a working selector implementation, or a verified
+> behavior-equivalent replacement for the measured binary.
 
-IMPORTANT HONESTY NOTE: the exact source diff from the build machine
-was NOT preserved. The selector shipped as an assembled binary
-(`llama-server-v02-select-r6.exe`); only its parts manifests and SHA256
-survive on disk. The binary is the source of record for every number in
-`results/` - the measurements stand on their own regardless of this
-file. This reconstruction is behavior-equivalent to the documented
-mechanism but is NOT the literal build diff: it is written from the
-project's build and design notes (PIONEER-SELECTIVE.md, R5-SELECT-NOTES.md,
-the Phase-0 build request, and the paper methods section) against the
-same llama.cpp base (b10537-era, commit bf0040e15), using the documented
-code locations and mechanism. It is intended for maintainers and
-reviewers to verify the approach. Anyone rebuilding from this
-reconstruction MUST re-run the quality gates (below) before trusting it;
-the numbers here were produced by the shipped binary, not by this
-reconstruction. Do not diff this file against the binary and expect a
-literal match.
+The original notes identify a custom `llama-server-v02-select-r6.exe` build and
+a b10537-era llama.cpp base, commit `bf0040e15`. The exact build-machine source
+diff was not preserved. The supplied patch is retained unchanged as a historical
+artifact; its own comments and older claims must be read with this correction.
+The result files are author-reported records, not proof that this sketch
+implements the measured behavior.
 
-## What it does (one paragraph)
+## What the sketch actually contains
 
-During decode (query rows N <= 4), a host-side selector scores every
-128-token KV block per kv-head and writes a 2-bits-per-tile bitmap into
-the flash-attention mask_opt path. Tiles outside the keep-set are marked
-ALL_NEG_INF, and the existing shader skip path never issues their K/V
-loads. The keep-set is: tile 0 (attention sink) + the newest
-GGML_VK_FA_SELECT_RECENT tiles (default 2) + top-(KEEP%) tiles by a
-first-order bound score. Env-gated: unset KEEP = byte-identical stock
-dispatch.
+- Environment-variable and dispatch-gate changes intended to enable selection
+  during decode with at most four query rows.
+- A `ggml_vk_fa_select_blocks` function that only returns
+  `(int)(keep_pct * n_blocks)`. It does not compute block scores, select top
+  blocks, retain sink/recent blocks, or populate `keep_mask`.
+- A `ggml_vk_fa_select_write_mask` function whose body contains comments only.
+  It does not write the proposed bitmap into the attention-mask data path.
+- Calls referring to query and key-bound inputs whose complete integration and
+  maintenance are not supplied here.
 
-## The three changes
+Consequently, setting the documented environment variables or applying this
+file does not establish a functioning selective-attention implementation. A
+successful patch application or compilation would not, by itself, establish
+correctness. The earlier description of this reconstruction as "faithful" and
+"behavior-equivalent" was not supported by the supplied code.
 
-1. Env parsing + selector (ggml-vulkan.cpp, host side)
-2. Relax the decode gate so mask_opt engages at N<=4 (ggml-vulkan.cpp,
-   the use_mask_opt condition near the FA dispatch)
-3. Selector output written into data_mask_opt (the fa_mask_opt
-   pipeline; the shader itself needed no change - scalar/cm1/cm2 all
-   honor the mask path)
+## Intended mechanism in the historical notes
 
-## Files
+The proposed mechanism scores 128-token KV blocks per KV head, retains an
+attention-sink block and a recent window, and selects additional blocks by a
+first-order bound. A two-bit tile bitmap would then use the existing
+flash-attention mask path to skip other blocks. This describes the design
+intent, not completed logic in this repository. Claims of unchanged stock
+dispatch when disabled also require implementation-specific verification.
 
-- `selective-skip.diff` - the reconstructed patch (unified diff)
-- `README.md` - this file
+## Independent implementation and evaluation
 
-## Quality gates to re-run after any rebuild
+Anyone investigating this design needs to implement and review the missing
+logic, pin the full source and build configuration, and run fresh correctness,
+quality, memory-safety, and performance evaluations. Keep-all equivalence and
+disabled-selector behavior need explicit tests against the same stock build.
 
-- KEEP=100 sanity: output must match stock to ULP class (bitmap inert
-  when everything is selected)
-- multi-hop retrieval at true >=199.7k resident: 3/3 PASS
-- depth-GSM8K at 199.7k with selection active: 29/30
-- acceptance |delta| <= 0.05 vs stock at the operating point
+The historical checks included a keep-all control, a small depth-GSM8K sample,
+and repeated retrieval of a fixed question. Their reported outcomes are
+documented in [the results index](../results/README.md); they are not sufficient
+acceptance criteria for a new implementation or a broad quality certification.
+The [reproduction notes](../repro/README.md) describe the remaining workflow
+gaps. No completed reconstruction or new benchmark is supplied by this
+documentation correction.
