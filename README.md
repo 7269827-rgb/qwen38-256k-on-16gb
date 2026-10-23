@@ -1,271 +1,181 @@
-# 256k context on a 16 GB GPU - Qwen3.8-27B, quality-gated, measured
+# Qwen3.8-27B on 16 GB — legacy quantization and inference experiment
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Paper: CC-BY-4.0](https://img.shields.io/badge/paper-CC--BY--4.0-lightgrey.svg)](paper/LICENSE)
-[![llama.cpp](https://img.shields.io/badge/llama.cpp-Vulkan-8A2BE2.svg)](https://github.com/ggml-org/llama.cpp)
+> **Status update — 2026-10-22: legacy; not recommended for new deployments.**
+> This release is retained as a record of a single-GPU quantization and inference
+> experiment. It is no longer presented as a current model or performance
+> recommendation. The figures below are historical, author-reported measurements,
+> not current rankings or performance guarantees. No new inference benchmark was
+> run for this documentation update. There is no verified like-for-like comparison
+> here establishing that a particular newer model outperforms this artifact.
 
-Qwen3.8-27B (27B params, 262k native context) at **50+ tokens/s at working
-depth with a full 256k allocation**, and **~42-46 t/s at 200k resident with
-a selective-attention skip**, on a **16 GB AMD RX 9070 XT** (Windows,
-llama.cpp Vulkan) - while holding quality on real long-context tasks. Full
-measurement data and a reproducible recipe are in this repo.
+## What this repository contains
 
-- **Community:** [Contributing](.github/CONTRIBUTING.md) ·
-  [Code of Conduct](.github/CODE_OF_CONDUCT.md) ·
-  [Security](.github/SECURITY.md) · [Author's note](#a-note-from-the-author)
-- **AI agents / tools:** read [AI-README.md](AI-README.md) first for a
-  compressed briefing and the rules for quoting these numbers.
-- **Status:** measurements complete, repo maintained, paper draft in
-  review. Replication reports and corrections are welcome (see
-  Contributing).
+This repository contains the available benchmark records, tensor map, historical
+launch notes, incomplete reproduction scripts, and a technical writeup for a
+**community quantization of Qwen3.8-27B**. The downloadable weight artifact is
+published separately on
+[Hugging Face](https://huggingface.co/Kindadodgy/qwen38-256k-on-16gb).
+The original build notes identify the source as the
+[Unsloth GGUF distribution](https://huggingface.co/unsloth/Qwen3.8-27B-GGUF).
+It is not a newly trained foundation model, a fine-tune, an official Qwen release,
+or an official Unsloth quantization. The documented experiment used an AMD
+RX 9070 XT with 16 GB VRAM, Windows, and llama.cpp's Vulkan backend.
 
-| What | Number | How it was measured |
+- **Task:** text generation. The archived experiment does not establish working image or
+  video inference; the upstream model's broader capabilities are not validation
+  of this GGUF configuration.
+- **Format:** GGUF, approximately **2.72 effective bits per parameter** overall.
+- **Quantization:** a mixed tensor map using Q2_K, IQ2_XXS, IQ3_XXS, IQ4_XS,
+  Q3_K, Q4_K, Q8_0, and F32; see [the published tensor map](configs/pareto-map.txt).
+  It is not uniformly 2-bit, and the earlier description "IQ2_XXS elsewhere"
+  omitted these exceptions.
+- **Context:** the recorded configuration allocated **262,144 tokens (256 Ki)**.
+  Allocated capacity is different from occupied KV-cache depth and does not
+  establish reliable performance across the entire context window.
+
+**Filename warning:** `pareto-bf16.gguf` is the historical filename of the
+quantized artifact. The original build notes describe BF16 source weights; the
+published output is mixed-quantized, not a full-BF16 release. A bounded inspection
+of the published GGUF header found **866 tensors and no BF16 tensors**, matching
+the mixed-type map above. The Hub currently
+displays a BF16/16-bit label; that label is misleading. The original filename,
+download URL, and checksum are retained for existing references.
+
+## Intended use and limitations
+
+Appropriate uses are studying the archived measurements, inspecting the tensor
+allocation recipe, and undertaking independent replication. This release is
+**not recommended as a default for new deployments or as a production-ready
+performance configuration**. Compatibility, output quality, memory use, and
+throughput need fresh evaluation on the intended hardware and software.
+
+For new evaluations, consult the maintained
+[Qwen organization page](https://huggingface.co/Qwen),
+[Unsloth distributions](https://huggingface.co/unsloth), and
+[upstream llama.cpp](https://github.com/ggml-org/llama.cpp).
+These are starting points for evaluation, not benchmarked replacements endorsed
+by this repository. No direct successor to this artifact is designated here.
+
+## Historical results — read with their conditions
+
+The original records are retained in [results/](results/README.md), with the
+pre-correction state available at
+[revision c7abad32](https://github.com/7269827-rgb/qwen38-256k-on-16gb/tree/c7abad32e4f2465617da890429831ddf534795db).
+The table preserves author-reported measurements. Checking the saved arithmetic
+is not independent replication of the experiment or authentication of its logs.
+These results are not directly comparable with current model leaderboards.
+
+| Measurement | Historically reported result | Conditions and evidence |
 |---|---|---|
-| Gate speed (256k allocated, 40k resident) | **56.6 t/s** (4th-best of 5) | `results/pareto-screen-c1..c5.json` |
-| Sustained 20-min floor | **58.5 t/s** | `results/sustained-pareto256.json` |
-| **200k resident (selective-skip, MTP on)** | **~42-46 t/s** (46.16 measured, 44.6 fresh boot, ~42 sustained) | `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`, `results/bench-depth-gsm8k.json` |
-| 200k stock (no skip) | **~33 t/s** | `results/bench-r6l2-mh-STOCK.json` |
-| Quality at 200k (depth-GSM8K, selection active) | **29/30 (96.7%)** | `results/bench-depth-gsm8k.json` |
-| Sustained proxy at 200k (30 depth-GSM8K problems) | **42.21 t/s mean** (median 41.99, min 39.07, max 46.46) | `results/bench-depth-gsm8k.json` || Long-context retrieval | **PASS at 200k** (multi-hop 3/3, smoke-scale) | `results/bench-r6l2-mh-K30.json` |
-| Supporting: LongBench v2 subset (short/medium, 25 q) | **14/25 (56%)** | `results/bench-longbench-v2.json` |
-| llama-bench raw curve (MTP off) | 45.3@4k -> 28.3@200k | `results/bench-lb-depth-*.json` |
-| Model footprint | **8.66 GiB, 2.72 BPW** | `configs/pareto-map.txt` |
+| Gate speed | 56.6 tokens/s, fourth-highest of five per-launch cache-hit means (two cached probes per launch) | 256 Ki allocated, approximately 40k resident; gate-era b10502-lineage build. `results/pareto-screen-c1..c5.json`. Not a measurement of the later selector binary. |
+| Working-depth 20-minute rolling-median floor | 58.5 tokens/s | Reported `rollingMedianFloor` field; this is not the minimum individual sample, which was 56.12 tokens/s. [Original record](https://github.com/7269827-rgb/qwen38-256k-on-16gb/blob/c7abad32e4f2465617da890429831ddf534795db/results/sustained-pareto256.json). Not a 200k-resident floor. |
+| Selector, server path with MTP enabled | 46.16 tokens/s three-run mean; separate fresh-boot three-run mean approximately 44.6 | Reported approximately 200k resident; `results/bench-r6l2-mh-K30.json` and `results/bench-r6op-mh.json`. State-dependent campaign results, not individual-run maxima. |
+| Per-problem speed proxy | 42.21 tokens/s mean across 30 problems | `results/bench-depth-gsm8k.json`. A workload mean, not a measured 20-minute rolling floor. |
+| Stock/no-selector server control | Approximately 33 tokens/s | Reported approximately 200k resident; `results/bench-r6l2-mh-STOCK.json`. |
+| Depth-GSM8K check | 29/30 (96.7%) | Small author-run selection-active test; `results/bench-depth-gsm8k.json`. Not a full official GSM8K score or broad quality certification. |
+| Retrieval smoke check | Three successful repetitions | `results/bench-r6l2-mh-K30.json`. Repetitions of a fixed question, not three independent retrieval tasks. |
+| LongBench v2 subset | 14/25 (56%) | 22 short and three medium examples; ten easy and 15 hard. [Saved record](results/bench-longbench-v2.json). Not the full benchmark; no examples labeled long. |
+| Raw decode, MTP disabled | 45.3 tokens/s at 4k to 28.3 at 200k | `results/bench-lb-depth-*.json`. Different measurement regime from the server/MTP rows. |
 
-LongBench v2 is a supporting signal (hard bilingual MC benchmark, easy
-subset, N=25). The primary quality story is depth-GSM8K at 200k plus
-the multi-hop smoke test; see the paper for full context.
+**A later check did not reproduce the headline speeds.** The saved records
+report **23.0–29.3 tokens/s** across six empty/loaded-cache shallow
+probes and a separate clean-cell mean of **27.2 tokens/s** (six probes spanning
+25.2–30.5). These post-publication checks were unresolved/UNCLASSIFIED. The record leaves
+open whether this reflects a slower hardware/driver state or conditions that
+could not be reproduced. See
+[the caveats](notes/caveats.md),
+`results/protocol-vs-state-2026-08-24.json`, and
+`results/working-depth-clean-cell-2026-08-24.json`.
 
-Note on the sustained number: the "~42 sustained at 200k" figure is the
-mean over 30 depth-GSM8K per-problem speeds (receipt
-`results/bench-depth-gsm8k.json`), reported as a proxy. A formal
-20-minute rolling-median floor at K30/200k was not run; if you quote
-the sustained number, say it is a per-problem proxy, not a measured
-floor.
+## Evaluation and reproduction boundaries
 
-## What you should expect to reproduce (read this first)
+- Server measurements with multi-token prediction/speculative decoding enabled
+  and `llama-bench` raw decoding with MTP disabled are different regimes. Their
+  tokens/s figures should not be combined into a single speed claim.
+- The published records do not support a blanket statement that every comparison
+  was interleaved. The paper discusses sequential arms, possible order effects,
+  driver-state variation, and sustained drift.
+- Resident depth in the server checks is author-recorded; the saved result JSONs
+  do not provide a complete independent audit of the cache-fill procedure.
+- A small depth-GSM8K sample and a repeated retrieval prompt do not establish
+  general long-context reasoning or task quality. The published record does not
+  contain a completed RULER evaluation. No new evaluation is promised here.
+- The exact diff for the binary used in the selective-attention measurements was
+  not preserved. The supplied
+  [selector patch](https://github.com/7269827-rgb/qwen38-256k-on-16gb/blob/c7abad32e4f2465617da890429831ddf534795db/patches/selective-skip.diff)
+  is an incomplete reconstruction, with unfinished selector/mask logic. It is
+  not a verified, behavior-equivalent implementation of the measured binary.
+- The reproduction scripts contain manual or unimplemented steps. A tensor map,
+  historical command line, and published checksum do not by themselves guarantee
+  a byte-identical rebuild or reproduction of the reported speed.
+- Other GPU architectures, operating systems, current llama.cpp revisions, and
+  general production workloads were not validated by this documentation audit.
 
-The numbers above are the measured campaign results. They are real
-receipts, but they are not all reproducible on demand on every launch,
-and you should know exactly which ones are:
+## Artifact identity and historical launch notes
 
-- **Reliable and reproducible:** quality results (depth-GSM8K 29/30,
-  GSM8K 144/150, multi-hop, LongBench 14/25) and the llama-bench raw
-  curve (45.3@4k to 28.3@200k, MTP off). These do not depend on the
-  speed state.
-- **Measured in campaign sessions, state-dependent:** the fast speeds
-  (56.6/58.5 gate, 60-71 SANITY @5k, 42-46 @200k). This rig has a
-  documented bistable fast/slow driver state. Those numbers came from
-  FAST-state-classified sessions. A fresh launch can land in either
-  state.
-- **What a fresh launch measured on our own post-publication check:**
-  ~24-29 t/s at shallow context, both with and without loaded cache
-  (results/protocol-vs-state-2026-08-24.json and
-  results/working-depth-clean-cell-2026-08-24.json). This reading is
-  UNCLASSIFIED: it may be slow state, or the fast numbers may have
-  depended on conditions we cannot reproduce. We are reporting this
-  rather than hiding it.
+The associated Hugging Face repository records one model file:
 
-The honest headline: this model runs on a 16 GB card with a 256k
-allocation and quality held at depth. Speed varies by launch state on
-this single rig; treat the fast numbers as best-case campaign
-measurements, not a guarantee. If you want the speed story made
-reproducible, that is open work (see `notes/caveats.md` and the
-selective-skip patch in `patches/`).
+- File: [`pareto-bf16.gguf`](https://huggingface.co/Kindadodgy/qwen38-256k-on-16gb/resolve/main/pareto-bf16.gguf)
+- Size: **9,298,488,288 bytes**, approximately **8.66 GiB**.
+- Published SHA256:
+  `57dda505ecd2b0731341c002ff03ede1526740dc899e6f840ae1dfb7f1b3fa81`.
+- [Tensor map](configs/pareto-map.txt), [artifact notes](configs/blob-identity.md),
+  and [historical launch flags](configs/launch-flags.md).
 
-Build qualifier on the working-depth numbers: the gate rows above
-(56.6/58.5 at 40k resident) were measured on the gate-era build (b10502
-lineage, pareto blob, q8_0 draft KV). The selective-skip build (the
-46.16/44.6/~42 rows) is a different binary; its own shallow-depth
-measurements are the labeled SANITY cells (60-71 t/s at 5k resident,
-results/bench-r6-SANITY-* equivalents in the measurement record), with
-a clean working-depth cell recorded (results/working-depth-clean-cell-
-2026-08-24.json). Note: this rig has a documented bistable fast/slow
-driver state; the fast numbers came from FAST-state-classified sessions,
-and any launch can land in either state. We do not present the gate
-number as measured by the selective-skip build, and we do not quote a
-working-depth number without its state label.
+The SHA256 is the published artifact identifier, not a claim that this
+documentation audit downloaded and rehashed the entire model. Verify a downloaded
+copy before using it. Historical launch examples are retained for research and
+must not be read as "works everywhere" instructions or present-day compatibility
+guarantees. Upstream llama.cpp does not gain the custom selector merely by setting
+the documented environment variables.
 
-Numbers are the sanctioned set; result files outrank prose. Every number
-in the table has its receipt in `results/`.
+## Navigating the archive
 
-## How it fits inside the card
+| Path | Purpose |
+|---|---|
+| [results/](results/README.md) | Original JSON measurements and corrected interpretation guide. |
+| [configs/](configs/blob-identity.md) | Weight identity, mixed tensor map, and historical launch settings. |
+| [repro/](repro/README.md) | Historical shell fragments; not a complete automated reproduction. |
+| [patches/](patches/README.md) | Incomplete selector sketch; the measured source diff is missing. |
+| [paper/](paper/README.md) | Legacy technical note, original figures, and figure CSVs. |
+| [notes/caveats.md](notes/caveats.md) | Evaluation and provenance limitations. |
+| [AI-README.md](AI-README.md) | Compact evidence summary for readers and summarization tools. |
 
-16 GB must hold the weights AND the KV cache at 256k allocation. The
-math: the model is a hybrid, so only 16 of its 64 layers store
-full-attention KV (48 are Gated-DeltaNet with O(1) state per token).
-That structural fact is what makes 256k physically possible on 16 GB;
-the pareto quant (8.66 GiB, 2.72 BPW) plus q4_0 KV cache keeps the
-allocation inside free VRAM with a ~180 MiB margin at ngl 99. Detail
-in `configs/launch-flags.md` and `configs/blob-identity.md`.
+See [contribution guidance](.github/CONTRIBUTING.md),
+[code of conduct](.github/CODE_OF_CONDUCT.md), and
+[security guidance](.github/SECURITY.md). The documentation cleanup does not
+promise new experiments, active deployment support, or a peer-reviewed paper.
 
-## Daily driver (how people will actually use it)
+## Project note
 
-Two paths, both honest about what you get.
+This repository preserves the available experimental results and configuration
+notes for research reference. The limitations above describe gaps in the archived
+record. Corrections and independent replication reports can be shared through
+[repository issues](https://github.com/7269827-rgb/qwen38-256k-on-16gb/issues).
 
-**Path A: stock llama.cpp - works everywhere, no custom build.**
+## Credits and licenses
 
-Download the GGUF from Hugging Face, then:
+- Base model: [Qwen3.8-27B](https://huggingface.co/Qwen/Qwen3.8-27B),
+  [Apache-2.0 license](https://huggingface.co/Qwen/Qwen3.8-27B/blob/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/LICENSE).
+- Conversion/quantization lineage: Unsloth's GGUF distribution and llama.cpp.
+  This artifact is independently published by Kindadodgy.
+- The experimental selective-attention work was described as drawing on
+  Quest/NSA-style research; this attribution is not an implementation-validation
+  claim.
+- The original publication disclosed human oversight and AI-assisted
+  implementation and analysis.
+- Model weights retain their declared **Apache-2.0** license. Recipe/configuration
+  code retains the repository's [MIT license](LICENSE);
+  paper text and figures retain their declared [CC-BY-4.0 license](paper/LICENSE). This status update does not change
+  those licenses or remove the artifact.
 
-```
-llama-server --model pareto-bf16.gguf \
-  --cache-type-k q4_0 --cache-type-v q4_0 \
-  --spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-p-min 0.60 \
-  --n-gpu-layers 99 --host 127.0.0.1 --port 8080 --ctx-size 262144 \
-  -fa on -ctkd q4_0 -ctvd q4_0
-```
+## Citing the work
 
-You get the MTP boost (~18-24 t/s on short contexts), the full 256k
-allocation, and the quality gates intact, on any recent llama.cpp
-(b10537-era or newer). At deep context you get stock speeds (~33 t/s at
-200k) because the selective-skip is not active on the stock build.
+Cite this as a community repository or technical note, not a peer-reviewed paper
+or an independently verified performance result. Include the revision you used
+and the measurement conditions when quoting a number. For example:
 
-**Path B: the selective-skip build - the 42-46 t/s number.**
+> Kindadodgy. (2026). Qwen3.8-27B on 16 GB: legacy quantization and inference
+> experiment. GitHub repository. https://github.com/7269827-rgb/qwen38-256k-on-16gb
 
-Same command plus two env vars (GGML_VK_FA_SELECT_KEEP=30,
-GGML_VK_FA_SELECT_MINKV=32768). Requires the custom llama.cpp build
-(commit bf0040e15) whose mechanism is documented in `patches/`. Gives
-~42-46 t/s at 200k resident with quality intact.
-
-Three things to know before Path B:
-- It is a patched llama.cpp build: upstream llama.cpp does not have
-  GGML_VK_FA_SELECT_KEEP. The mechanism is reconstructed in `patches/`
-  (behavior-equivalent; the exact build-machine diff was not archived).
-- Deep fills must be chunked, not single-shot prefilled (one documented
-  98C thermal event during a single-shot 200k fill; the repro scripts
-  use the chunked loader).
-- Receipts are gfx1201/RDNA4/Windows only. Other GPUs and OSes are
-  untested; expect different numbers (mask_opt availability differs by
-  architecture).
-
-Most users will start with Path A; Path B is the frontier config.
-
-## Why this is interesting
-
-A 27B model with 262k context normally needs a 24 GB+ card. It fits on
-16 GB for a structural reason: this model stores KV memory for only 16 of
-its 64 layers (48 are Gated-DeltaNet linear attention). The rest is a
-speed/quality engineering problem, which this repo documents.
-
-Four measured findings:
-
-1. **The selective-attention tile-skip (the 200k mechanism).** Attention
-   skips K/V tiles outside a keep-set during generation
-   (GGML_VK_FA_SELECT_KEEP=30). At 200k resident this holds ~42-46 t/s
-   vs ~33 stock on the server/MTP path, with zero measurable fixed overhead
-   (keep-all 33.00 vs stock 32.87), and depth-GSM8K 29/30 at 200k. In the
-   MTP-off llama-bench raw curve the skip is neutral (45.3 vs 45.2 etc) -
-   the gain is measured on the speculative-decode path. Builds on the
-   Quest/NSA selective-attention research lineage (Chinese open-source
-   community).
-2. **Profile-driven quant allocation (the frontier).** q2_K only on the
-   FFN gate/up tensors (where decode time lives) buys most of a full-2-bit
-   blob's speed without its quality collapse (60.3 t/s @ 101/150 vs 56.6
-   @ 142/150), with context capacity as the objective.
-3. **The MTP x allocation interaction.** On HIP, MTP is +43% at 64k alloc
-   but -53% at 256k; on Vulkan it stays +11%. Backend choice can invert a
-   feature's benefit.
-4. **The bandwidth model (in-model fit).** t/s = C / (W + 18KB x
-   resident), C = 288.6 GB/s - predicts the residency curve; explains why
-   the attention re-read (not the math) is the depth wall.
-
-## Reproduce it
-
-1. `repro/01-download.sh` - BF16 base (verified against LFS oids) + imatrix.
-2. `repro/02-quantize.sh` - llama-quantize --tensor-type-file pareto-map.txt.
-3. `repro/03-run.sh` - llama-server with the exact flags + K30 env
-   (GGML_VK_FA_SELECT_KEEP=30 GGML_VK_FA_SELECT_MINKV=32768).
-4. `repro/04-probe.sh` - reproduce the gate runs + the 200k K30 sweep.
-
-## A note from the author
-
-This is my only GPU, and I am still paying it off. It is also my school
-and everything rig, so I could not go as deep into this as I wanted.
-I left all the data and receipts here so people can improve on this and
-do not waste time on ground I already covered. I hope this helps people
-who cannot afford a big rig, and I welcome feedback and replication. If
-something here is wrong, show me the receipt and I will fix it.
-
-## Honest caveats
-
-- One rig, self-consistent (RX 9070 XT, driver 32.0.31035.1003; llama.cpp
-  custom build, commit bf0040e15 / b10537-era, with the selective-skip
-  selector; full identity in configs/blob-identity.md). Not
-  leaderboard-comparable; llama-bench done, RULER pending.
-- 50+ t/s is at working depth (<=64k resident). At 200k the honest number
-  is ~42-46 with the skip (~33 stock); at full 250k resident ~27-32,
-  limited by an upstream Vulkan attention-bandwidth issue (#26663 class).
-- Two number sets, both real: server/MTP (real usage, ~2.4-2.6x
-  amplification) and llama-bench MTP-off (raw decode, comparable to other
-  cards). Never conflate them.
-- Multi-hop N=3 is a smoke test, not a certification; a larger-N run
-  (N>=50 with paraphrase-gap needles) is planned.
-- 2-bit is a real quality cliff; I hold quality by localizing the damage.
-- Bistable fast/slow state (44.57 vs 32.67 = 1.36x) + ~20% sustained
-  drift; all comparisons same-day, interleaved, cache-hit.
-
-## Files
-
-- `AI-README.md` - compressed briefing for LLM agents / AI coding tools
-  (bootstraps fast, includes the hard rules for quoting these numbers)
-- `paper/` - the writeup (paper.md) + figures + raw CSVs
-- `results/` - every JSON behind the table (results/README.md = field explainer)
-- `configs/` - the exact quant map + launch flags + K30 env + blob hash
-- `repro/` - 01 download, 02 quantize, 03 run, 04 probe
-- `patches/` - reconstructed source for the selective-attention tile-skip
-  (see the honesty note inside: the build-machine diff was not archived)
-- `notes/caveats.md` - the honest box
-
-## License
-
-MIT (code/configs, see LICENSE) · CC-BY-4.0 (paper text + figures, see
-paper/LICENSE). Built with llama.cpp (MIT), Qwen3.8-27B (Apache-2.0),
-Unsloth's GGUF pipeline. Credit: the human (the thesis + oversight),
-four AI assistants by role, and the Chinese selective-attention research
-community.
-
-## How to cite
-
-If this work is useful to you, a citation or a link back is appreciated
-(no formal DOI yet; the repo is the canonical reference).
-
-Plain-text citation:
-
-```
-Kindadodgy. (2026). 256k context on a 16 GB GPU - Qwen3.8-27B,
-quality-gated, measured. GitHub repository.
-https://github.com/7269827-rgb/qwen38-256k-on-16gb
-```
-
-BibTeX:
-
-```bibtex
-@misc{kindadodgy2026qwen38256k,
-  title = {256k context on a 16 GB GPU - {Qwen3.8-27B}, quality-gated, measured},
-  author = {Kindadodgy},
-  year = {2026},
-  howpublished = {\url{https://github.com/7269827-rgb/qwen38-256k-on-16gb}},
-  note = {Single-rig measurements; all receipts in the repository}
-}
-```
-
-If you publish numbers from this repo, please state the two number
-regimes (server/MTP-on vs llama-bench MTP-off) as labeled here, and do
-not present a single best run as the sustained bar.
-
-## How to quote these numbers
-
-Three rules keep these numbers honest; the full brief is in
-[AI-README.md](AI-README.md) (the "Hard rules" section).
-
-1. **Always label the regime.** server/MTP-on (real usage) and
-   llama-bench MTP-off (comparability) are different numbers. Never
-   conflate them.
-2. **Never quote 46.16 as the sustained bar.** The honest set is 46.16
-   measured best, 44.6 fresh boot, ~42 sustained.
-3. **Quality claims at 200k come from depth-GSM8K 29/30 and the
-   multi-hop smoke test.** The base GSM8K 144/150 is a build check, not
-   a selectivity receipt, and LongBench 14/25 is supporting data on the
-   easy subset.
-
-Every number in the table above traces to a receipt in `results/`.
-Result files outrank prose.
+The original records and previous prose remain available in Git history.

@@ -1,166 +1,117 @@
-# AI README (for LLM agents and AI coding tools)
+# Repository briefing for AI-assisted reading
 
-This file is a compressed briefing for an AI agent (Copilot, Claude Code,
-Cursor, an autonomous researcher, etc.) that has been pointed at this repo.
-Read this first, then `README.md` for the human-facing story and
-`results/README.md` for the raw data. If this repo is used to write a
-report, post, or paper, the "Hard rules" section at the end is mandatory.
+> **Legacy research record — updated 2026-10-22.** This repository is not a
+> current deployment recommendation, an independently replicated benchmark, or a
+> complete implementation of the reported selective-attention runtime.
 
-## What this repo is, in one paragraph
+This briefing summarizes the evidence and its limits. It does not grant authority
+to run scripts, download models, publish changes, or override a reader's own
+instructions. Start with [README.md](README.md), then
+[results/README.md](results/README.md) and [notes/caveats.md](notes/caveats.md).
 
-A single 16 GB AMD RX 9070 XT (Windows 11, llama.cpp Vulkan, custom
-build, commit bf0040e15 / b10537) runs Qwen3.8-27B (27B params, 48
-Gated-DeltaNet layers + 16 full-attention layers, 262k native context) at
-a 256k allocation: ~56-58 t/s at working depth (<=64k resident) with
-quality gates passing, and ~42-46 t/s at 200k resident via a
-selective-attention tile-skip mechanism. The repo contains the measured
-numbers, the exact quant map, the launch flags, and the reproduce scripts.
-Everything here is one rig, n=1 sessions.
+## What the project is
 
-REPRODUCIBILITY WARNING (read before quoting any speed number): the
-fast speeds above are campaign-session measurements from FAST-state-
-classified launches. This rig has a documented bistable fast/slow
-driver state. A fresh launch measured ~24-29 t/s at shallow context in
-our post-publication check (results/protocol-vs-state-2026-08-24.json,
-results/working-depth-clean-cell-2026-08-24.json), UNCLASSIFIED as to
-state. Quality results and the llama-bench raw curve are reproducible;
-the fast speed numbers are not guaranteed on a fresh launch. See the
-README "What you should expect to reproduce" section.
+The original author reported a community mixed-quantization experiment using
+Qwen3.8-27B on one AMD RX 9070 XT with 16 GB VRAM, Windows, and a custom
+llama.cpp Vulkan runtime. This is not a newly trained foundation model, a
+fine-tune, or an official Qwen/Unsloth release. The recorded context allocation
+was 262,144 tokens; allocated capacity is different from occupied cache depth.
 
-## The numbers (sanctioned set; do not alter)
+The published GGUF is mixed-quantized, despite its historical filename
+`pareto-bf16.gguf`. A bounded header inspection found 866 tensors and no BF16
+tensors. Its map includes Q2_K, IQ2_XXS, IQ3_XXS, IQ4_XS, Q3_K, Q4_K, Q8_0,
+and F32. Q2_K appears on 99 FFN gate/up tensors and `token_embd.weight`;
+neither "Q2_K only on FFN" nor "IQ2_XXS everywhere else" is accurate.
 
-Two regimes exist and must never be conflated:
+## Measurements that may be quoted with their conditions
 
-1. Server path, MTP speculative decoding ON (how the model is actually
-   used, the headline):
-   - Gate (256k alloc, 40k resident): 56.6 t/s 4th-best-of-5
-     (`results/pareto-screen-c1..c5.json`), 20-min floor 58.5 t/s
-     (`results/sustained-pareto256.json`). BUILD QUALIFIER: these gate
-     numbers were measured on the gate-era b10502-lineage build; the
-     selective-skip build's own working-depth cell is pending (its
-     shallow evidence is the SANITY cells, 60-71 t/s at 5k). Do not
-     present the gate number as measured by the selective-skip build.
-   - 200k resident: 46.16 t/s measured best (ladder), 44.6 fresh boot,
-     ~42 sustained. Stock (no skip) ~33 t/s.
-     Receipts: `results/bench-r6l2-mh-K30.json`, `results/bench-r6op-mh.json`
-     (short probes), `results/bench-depth-gsm8k.json` (sustained: its 30
-     per-problem gen speeds average 42.21 t/s),
-     `results/bench-r6l2-mh-STOCK.json`.
-2. llama-bench path, MTP OFF (community raw-decode curve, comparable to
-   other cards' published results): stock 45.3@4k -> 28.3@200k; K30
-   identical within 0.1 t/s at every depth. The selective-skip gain does
-   NOT appear on this path. Receipts: `results/bench-lb-depth-*.json`,
-   `results/bench-lb-k30-depth-*.json`.
+All figures below are historical author-reported records, not fresh results from
+the documentation audit. They do not establish a current ranking.
 
-Quality at 200k (selection active): depth-GSM8K 29/30 (96.7%),
-`results/bench-depth-gsm8k.json`. Base GSM8K (selection inactive):
-144/150 at K30, `results/bench-r6op-gsm8k.json` (strongest receipt;
-a gate-era 142/150 also exists at `results/gsm8k-pareto64.json`).
-LongBench v2 (short/medium subset, 25 q, thinking off): 14/25 (56%),
-`results/bench-longbench-v2.json`. Multi-hop retrieval at 200k: 3/3
-PASS, but N=3 is a smoke test, not a certification. Draft acceptance
-0.91-0.94.
+| Measurement | Recorded result | Qualification |
+|---|---|---|
+| Gate speed | 56.6 tokens/s | Fourth-highest of five per-launch cache-hit means, two cached probes per launch; approximately 40k resident, 256 Ki allocated. Gate-era b10502-lineage build, not the later selector binary. |
+| Working-depth 20-minute record | 58.5 tokens/s | Reported `rollingMedianFloor`; the minimum individual sample was 56.12. Not a 200k-resident floor. |
+| Selector server/MTP result | 46.16 tokens/s | Three-run mean at author-reported approximately 200k resident, not an individual-run maximum. |
+| Separate fresh-boot selector result | 44.6 tokens/s | Three-run mean; not a promise about other launches. |
+| Per-problem speed proxy | 42.21 tokens/s | Arithmetic mean of 30 per-problem rates; not a formal sustained-floor test or aggregate token-weighted throughput. |
+| Stock server/MTP control | 32.87 tokens/s | Separate control record at author-reported approximately 200k resident. |
+| Raw decode, MTP disabled | 45.3 tokens/s at 4k to 28.3 at 200k | `llama-bench` regime; selector and stock curves are nearly unchanged at the recorded depths. |
 
-Keep-all control: 33.00 t/s vs 32.87 stock = zero measurable fixed tax
-(`results/bench-r6-keepall.json`).
+Sources: `results/pareto-screen-c1.json` through `pareto-screen-c5.json`,
+`sustained-pareto256.json`, `bench-r6l2-mh-K30.json`, `bench-r6op-mh.json`,
+`bench-depth-gsm8k.json`, `bench-r6l2-mh-STOCK.json`, and the
+`bench-lb-depth-*.json` / `bench-lb-k30-depth-*.json` pairs.
 
-## How to get the model
+The keep-all control averaged 33.00 tokens/s versus 32.87 for stock. This small
+observed difference does not prove exactly zero overhead or isolate its cause.
 
-Option B (recommended): rebuild from source - all inputs are public
-(`repro/01-03`):
-1. From `unsloth/Qwen3.8-27B-GGUF` on Hugging Face, get the BF16 base
-   (`BF16/Qwen3.8-27B-BF16-00001-of-00002.gguf` + `-00002-of-00002.gguf`,
-   LFS oids `b9966e82...` / `92e3943c...`), the imatrix
-   (`imatrix_unsloth.gguf`, oid `0ee5b10b...`), and optionally the MTP
-   head (`MTP/mtp-Qwen3.8-27B-Q4_0.gguf`, oid `50d9ce5a...`).
-2. `llama-quantize <BF16-shard-1> pareto-bf16.gguf --allow-requantize
-   --imatrix imatrix_unsloth.gguf --tensor-type-file configs/pareto-map.txt`
-   (llama.cpp b10537-era; single quantization, no requantize of the base).
-3. Verify SHA256 against the value below.
+### Quality checks
 
-Option A: download the exact blob. Filename `pareto-bf16.gguf`, 9,298,488,288
-bytes, SHA256 `57DDA505ECD2B0731341C002FF03EDE1526740DC899E6F840AE1DFB7F1B3FA81`.
-(Not published on Hugging Face at the time of writing; rebuild per
-Option B, or contact the author for a copy.)
+- Depth-GSM8K: 29/30, a small selection-active author-run sample.
+- Base GSM8K: 144/150 in the later record and 142/150 in the gate-era record,
+  versus a recorded 145/150 reference. The base questions did not exercise
+  selection at deep cache occupancy. These are custom checks, not official full
+  benchmark scores.
+- Retrieval: three successful repetitions of one fixed question, using a
+  substring check. They are not three independent tasks.
+- LongBench v2: 14/25 on a short/medium subset (22 short, three medium),
+  with thinking disabled. It is not the full benchmark; no examples are labeled long.
+- No completed RULER evaluation is present. No pending experiment is promised.
 
-## How to run it
+### Failed reproduction and uncertainty
 
-Server (200k K30 configuration, from `configs/launch-flags.md` +
-`repro/03-run.sh`):
+Later shallow checks recorded 23.0–29.3 tokens/s across six empty/loaded probes,
+and a separate six-probe clean-cell mean of 27.2 (range 25.2–30.5).
+Those records are labeled UNCLASSIFIED and did not reproduce the headline
+working-depth speeds. The cause is unresolved; do not convert the original
+driver-state hypothesis into an established diagnosis.
 
-```
-export GGML_VK_FA_SELECT_KEEP=30
-export GGML_VK_FA_SELECT_MINKV=32768
-llama-server --model pareto-bf16.gguf \
-  --cache-type-k q4_0 --cache-type-v q4_0 \
-  --spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-p-min 0.60 \
-  --n-gpu-layers 99 --host 127.0.0.1 --port 8090 --ctx-size 262144 \
-  -fa on -ctkd q4_0 -ctvd q4_0
-```
+The paper describes sequential arms, so a blanket "all comparisons were
+interleaved" claim is incorrect. The saved server JSONs also do not include the
+complete cache-fill logs needed to independently establish resident depth.
 
-The selector is an environment variable read at runtime, not a compile
-flag: unset it (or KEEP=100) for dense attention. MINKV=32768 gates
-shallow contexts so skipping never engages below 32k of KV.
+## Artifact and reproduction boundaries
 
-llama-bench (MTP off, for the comparability curve):
+The artifact is published on
+[Hugging Face](https://huggingface.co/Kindadodgy/qwen38-256k-on-16gb):
 
-```
-llama-bench -m pareto-bf16.gguf -p 512 -n 128 -d <depth> -b 512 -ub 256 \
-  -ngl 99 -fa on -ctk q4_0 -ctv q4_0 -r 3 -o json
-# depths: 4096 16384 32768 65536 131072 200000
-```
+- Filename: `pareto-bf16.gguf`
+- Size: 9,298,488,288 bytes
+- Published SHA256:
+  `57dda505ecd2b0731341c002ff03ede1526740dc899e6f840ae1dfb7f1b3fa81`
 
-Reproduce the gate runs and the K30 sweep: `repro/04-probe.sh`.
+This is the published identity, not a claim that the documentation audit
+downloaded and rehashed the full file. See
+[artifact notes](configs/blob-identity.md) and
+[historical launch flags](configs/launch-flags.md).
 
-## What each directory is for
+The exact selector source diff used for the measurements was not archived.
+[patches/selective-skip.diff](patches/selective-skip.diff) is an incomplete
+reconstruction: selector scoring/keep-set and mask-writing logic are unfinished.
+It is not a verified equivalent of the measured binary. Setting its environment
+variables does not add this mechanism to stock llama.cpp.
 
-- `results/` - every JSON behind the table; `results/README.md` is the
-  field explainer (what genPerS, docTokens, avg_ts mean).
-- `configs/` - `pareto-map.txt` (exact per-tensor quant map),
-  `launch-flags.md` (exact commands), `blob-identity.md` (hash + build
-  identity + env-var semantics).
-- `patches/` - reconstructed source diff for the selective-skip
-  (rebuilt from design notes; the exact build-machine diff was not
-  archived - the binary is the source of record for the numbers).
-- `repro/` - 01 download, 02 quantize, 03 run, 04 probe.
-- `paper/` - the arXiv-track paper draft (`paper.md`) + figures and the
-  raw CSVs behind them.
-- `notes/caveats.md` - the honest box; read before quoting numbers.
-- `.github/` - community health files: CODE_OF_CONDUCT, CONTRIBUTING,
-  SECURITY. If an agent or human wants to contribute, CONTRIBUTING.md has
-  the ground rules (including: receipts required).
-- `paper/LICENSE` - the paper text and figures are CC-BY-4.0; the root
-  LICENSE (MIT) covers code and configs. Cite accordingly.
+The `repro/` scripts contain manual and unimplemented steps. The tensor map,
+source descriptions, launch flags, and checksum do not constitute a complete
+reproducible build or benchmark harness. Do not describe this repository as
+turnkey, production-ready, byte-identically rebuildable, or independently
+replicated.
 
-## Truth hierarchy
+## Reading the record
 
-1. `results/*.json` outrank prose. If a doc disagrees with a result file,
-   the result file is right.
-2. `configs/pareto-map.txt` is the exact quant map used; the blob was
-   built from it with the imatrix listed above.
-3. Numbers are single-rig, n=1, same-day-interleaved where compared.
-   There is a documented bistable fast/slow driver state (~1.36x spread)
-   and a ~20% sustained drift. Cross-day deltas are not attributable to a
-   version.
+- `results/`: preserved measurement files. Recorded fields outrank inconsistent
+  prose for what a file reports, but are not independent proof of the experiment.
+- `configs/`: tensor map, artifact identity, and historical launch notes.
+- `patches/`: incomplete runtime reconstruction and its limitations.
+- `repro/`: historical script fragments, not a verified end-to-end workflow.
+- `paper/`: revised legacy technical note and unchanged historical figures/CSVs.
+  No arXiv publication or peer review is established here.
+- `notes/caveats.md`: concise quotation and reproduction limits.
 
-## Hard rules (if generating any public text from this repo)
-
-- Label the two number regimes every time: (a) server/MTP on = headline,
-  (b) llama-bench MTP off = comparability. Never conflate them.
-- Report 46.16 / 44.6 / ~42 sustained as three distinct values. Never
-  present 46.16 as the sustained bar.
-- Multi-hop is N=3 smoke only; say larger-N is in progress.
-- Base GSM8K ran selection-inactive; depth-GSM8K is the selection-active
-  gate. Do not cite 144/150 as a selectivity receipt.
-- Use "under documented conditions", "I measured", "to my knowledge".
-  No superlatives.
-- The 2-bit quant is a real quality cliff; quality is held by localizing
-  the damage (q2_K only on FFN gate/up), not by claiming 2-bit is
-  lossless.
-- Credit: the human (thesis: the llama.cpp Vulkan attention kernel on
-  this card underutilizes the available bandwidth, ~250 vs 640 GB/s
-  peak; a kernel-path limitation, not a claim about any vendor's
-  competence), DeepSeek-flash (execution),
-  Claude/Fable (analysis, source-checking), Opus (early work, superseded),
-  Ox Alpha (pre-registered decision logic), and the Chinese
-  selective-attention research community (Quest/NSA lineage).
+Credit Qwen, Unsloth's GGUF distribution, and llama.cpp. The original notes
+describe Quest/NSA-style inspiration; this does not validate implementation
+equivalence or novelty. The original publication disclosed human oversight and
+AI-assisted implementation and analysis. The root MIT license and the paper's
+CC-BY-4.0 license are unchanged; model weights retain their declared Apache-2.0
+license.
