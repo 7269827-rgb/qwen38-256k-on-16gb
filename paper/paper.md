@@ -1,348 +1,274 @@
-# 256k Context on a 16 GB GPU: Quantization Placement and Selective Tile-Skip for Hybrid-Attention Models on Vulkan
+# 256k Context on a 16 GB GPU: A Legacy Quantization and Inference Experiment
+
+> **Documentation revision — 2026-10-22.** This is a revised technical note
+> about historical author-reported measurements, not a current deployment
+> recommendation or an independently replicated result. No arXiv publication or
+> peer review is established by this repository. This revision corrects
+> unsupported descriptions without changing raw result files, figures, or CSVs.
+> No new inference benchmark was run. Earlier wording remains in Git history.
 
 ## Abstract
 
-Running 27B-class language models at very long context has been framed as a
-multi-GPU problem. I show that a single 16 GB consumer GPU (AMD RX 9070 XT,
-Windows, Vulkan via llama.cpp) can run a 27B hybrid-attention model
-(Qwen3.8-27B: 48 gated-delta-net layers plus 16 full-attention layers) with
-a 256k allocation, generating at 56-58 tokens/s at working depth (<=64k
-resident) and approximately 42-46 tokens/s at 200k resident context, under
-documented conditions. Two mechanisms carry the result. First, a
-placement-aware quantization recipe ("pareto") applies 2-bit Q2_K only to
-the feed-forward gate/up tensors, where decode time concentrates, reaching
-the integer-dot MMVQ fast path while preserving quality (GSM8K 144/150 on a
-self-consistent protocol at the K30 operating point vs a 145/150
-dense-reference baseline, receipt `results/gsm8k-dense-baseline.json`). Second, a selective-attention tile-skip
-mechanism skips K/V tiles outside an attention-relevance keep-set during
-generation; at KEEP=30% it delivers a 40% decode speedup over the same
-build without selection (46.16 vs 32.87 tokens/s cache-hit at 199.7k
-resident) with retrieval and acceptance unchanged. A keep-all control
-measures zero fixed overhead, and a simple bandwidth model predicts the
-measured ladder within 1.5 tokens/s. I publish the complete measurement
-record, including negative results (an attention-window patch that measured
-neutral, a fused-kernel design that regressed), the bistable driver-state
-characterization, and all receipts. All numbers are single-rig measurements
-on one card.
+The original experiment explored a community mixed-quantization GGUF of
+Qwen3.8-27B on one AMD RX 9070 XT with 16 GB VRAM, Windows, and custom
+llama.cpp Vulkan builds. The recorded configuration allocated 262,144 context
+tokens. Gate-era measurements reported 56.6 tokens/s as the fourth-highest of
+five per-launch cache-hit means at approximately 40k resident, and a separate
+20-minute record reported a 58.5 tokens/s rolling-median floor. A later custom
+selector configuration reported a three-run server/MTP mean of 46.16 tokens/s
+at approximately 200k resident, against 32.87 for stock.
 
----
+These numbers describe different measurements and builds. A separate 42.21
+tokens/s average across 30 problems is a workload proxy, not a sustained-floor
+test. Later shallow checks did not reproduce the headline working-depth
+rates, and their cause remains unresolved. The exact measured selector diff
+and a complete benchmark harness were not preserved. The available files
+support inspection of the recorded arithmetic and tensor recipe; they do not
+establish general quality, a complete replication, or present-day superiority.
 
-## 1. Introduction
+## 1. Scope and intended use
 
-Long-context inference for 27B-class models is usually presented as a
-datacenter capability; budget-hardware users are told to truncate context
-or rent compute. The people this helps most are often not equipped with
-100+ GB rigs.
+This project is a quantization and inference experiment, not the training or
+fine-tuning of a new model. The artifact was independently published from the
+Unsloth GGUF distribution of Qwen3.8-27B. The documented task is text generation;
+the record does not validate image or video inference for this artifact.
 
-Why it is hard on this hardware class:
+The useful questions are how tensor precision was allocated, how reported
+throughput changes between benchmark regimes, and which reproduction evidence
+is missing. The repository is retained for research reference and independent
+replication. It is not recommended as a default configuration for new
+deployments.
 
-- 16 GB VRAM must hold the weights and a 200k-token KV cache at the same
-  time.
-- On Windows/AMD the practical backends differ from CUDA: HIP holds
-  ~455-464 GB/s on attention shapes where Windows Vulkan was measured
-  collapsed to ~98 GB/s for hidden>=4096 (llama.cpp issue #26663); the
-  depth wall is therefore kernel-side, not silicon-side.
-- Speculative decoding (MTP) changes the cost anatomy: every decode step
-  scans the full KV once per verify batch, making attention cost
-  batch-linear in context length.
+Allocated context and occupied cache depth are different quantities.
+The 262,144-token allocation does not establish reliable inference throughout
+that capacity. Server depth labels below follow the author's notes: the saved
+JSONs do not independently reconstruct all cache-fill steps.
 
-The claim, in one sentence: on one 16 GB RDNA4 card under Windows/Vulkan,
-a placement-aware 2-bit quantization recipe plus a selective-attention
-tile-skip mechanism deliver 256k-allocation generation at 56-58 t/s at
-working depth, and ~42-46 t/s at 200k resident, with quality gates intact.
+## 2. Artifact and historical methods
 
-Contributions:
+### 2.1 Hardware and build identity
 
-- C1. The pareto quantization recipe (q2_K concentrated on the FFN
-  gate/up tensors) and its measured frontier (speed x quality x VRAM fit).
-- C2. A selective-attention tile-skip mechanism for Vulkan flash
-  attention, with a pre-registered KEEP ladder, a keep-all control, and
-  quality gating; this extends the prior selective-attention research
-  lineage (Quest/NSA style, largely from the Chinese open-source
-  community) to an end-to-end consumer-Vulkan validation at 200k. To my
-  knowledge, no prior end-to-end consumer-Vulkan validation at this
-  depth with quality gating has been published.
-- C3. A measured depth anatomy and pass-budget model for MTP decoding on
-  this class (attention ~55-72% of the pass, batch-linear), predictive to
-  ~1.5 tokens/s.
-- C4. An honest engineering record: the closed config space, the bistable
-  driver states, and four falsified mechanisms with receipts.
+The campaign notes identify one AMD RX 9070 XT with 16 GB VRAM, Windows,
+and the Vulkan backend of llama.cpp. The working-depth gate used a
+b10502-lineage build with q8_0 draft KV. The later selector records identify a
+b10537-era/bf0040e15 custom build with q4_0 draft KV. The working-depth gate
+must not be presented as a measurement of that later selector binary.
 
-Non-claims (explicit): I do not claim novelty for the draft-attention-
-window patch (already merged upstream in vllm-ascend #10023, speculators
-#523, sparkinfer #751, ik_llama.cpp #2021); it measured neutral on this
-model anyway, because Qwen3.8's attention is global and windowing is not
-honored. The GSM8K protocol used here is self-consistent, not
-leaderboard-comparable. All numbers are from one rig.
+The source and launch descriptions are incomplete provenance records, not
+immutable manifests for every measured executable. Current llama.cpp
+compatibility and performance on other systems were not tested by this audit.
 
-## 2. Methods
+### 2.2 Mixed quantization
 
-### 2.1 Hardware and software stack
+The artifact is published as `pareto-bf16.gguf`, with a recorded size of
+9,298,488,288 bytes and published SHA256:
 
-- GPU: AMD RX 9070 XT (RDNA4, 16 GB, 64 CUs). CPU: 16-thread desktop. OS:
-  Windows. Stack: llama.cpp Vulkan backend, custom build (commit
-  bf0040e15, b10537-era) with the selector build for the tile-skip;
-  shader toolchain glslc 2026.4-dev.
-- Model: Qwen3.8-27B (hybrid: 48 Gated-DeltaNet layers plus 16
-  full-attention layers, GQA 24:4, head_dim 256, vocab 248,320), MTP
-  draft head (--spec-draft-n-max 2, p_min 0.60), draft KV q4_0.
-- Production blob: pareto-bf16.gguf, 8,867.73 MiB on disk (2.72 BPW):
-  Q2_K on the 99 FFN gate/up tensors only, IQ2_XXS elsewhere, 31 Q4_K
-  FFN tensors, Q8_0 ssm guards, single-quantized from the verified Unsloth
-  BF16 base. SHA256:
-  57DDA505ECD2B0731341C002FF03EDE1526740DC899E6F840AE1DFB7F1B3FA81.
+```text
+57dda505ecd2b0731341c002ff03ede1526740dc899e6f840ae1dfb7f1b3fa81
+```
 
-### 2.2 The pareto quantization recipe
+The filename is historical. The output is mixed-quantized, not BF16. A bounded
+inspection of its header and tensor directory found 866 tensors, no BF16
+tensors, and the following types, consistent with
+[the tensor map](../configs/pareto-map.txt):
 
-On this stack, decode-time matmul throughput is dominated by whether the
-weights reach the integer-dot MMVQ kernels (K-quants do; i-quants do
-not). Placing the aggressive 2-bit type exactly on the tensors that own
-most decode time (FFN gate/up) buys the fast path where it pays, while
-keeping IQ2_XXS (better per-bit quality, float-dequant path) on the
-remaining tensors. The measured frontier: an all-Q2_K blob is fastest
-(60.3 t/s at 64k) but GSM8K drops to 101/150 (rejected); gate-types-only
-preserves quality but is slow; the pareto mix gets both (56.6 t/s
-4th-best-of-5, 58.5 t/s 20-minute sustained floor at 40k resident with
-256k allocated; GSM8K 142/150 at the gate, 144/150 at the K30 operating
-point).
+| Type | Tensor count |
+|---|---:|
+| F32 | 408 |
+| IQ2_XXS | 176 |
+| Q2_K | 100 |
+| IQ3_XXS | 80 |
+| Q8_0 | 48 |
+| Q4_K | 31 |
+| IQ4_XS | 21 |
+| Q3_K | 2 |
 
-### 2.3 Selective-attention tile-skip
+Q2_K covers 99 FFN gate/up tensors and `token_embd.weight`. Earlier prose
+saying it occurred only on FFN tensors, with IQ2_XXS everywhere else, was
+incomplete. The file is approximately 2.72 effective bits per tensor element
+overall, not uniformly 2-bit. The original notes describe a BF16 source, but
+this documentation audit did not independently reproduce the full input-to-output
+build lineage or download and hash the entire model.
 
-During generation, a selector computes a keep-set over 128-token KV
-blocks per (layer, kv-head); blocks outside the keep-set are skipped in
-the flash-attention tile loop (their K/V loads are never issued), via the
-shader's existing mask path. Keep-set composition: structural protection
-(sink blocks plus a recent window) union query-relevant blocks by
-first-order bounds (Quest-style min/max metadata). The environment
-variable GGML_VK_FA_SELECT_KEEP sets the keep fraction (rho); MINKV gates
-shallow contexts so skipping never engages below 32k of KV.
+The original rationale was to place aggressive quantization on tensors thought
+to dominate decode cost while retaining other formats elsewhere. The present
+record does not independently validate every kernel-path explanation or prove
+that this mix preserves quality across general workloads.
 
-What it does NOT do: it does not recompute or approximate attention
-scores (no proxy scoring inside the kernel); it does not evict or destroy
-the cache (dense operation is restored by unsetting the environment
-variable); it does not use trained sparsity. Enabling it required relaxing
-a host-side decode gate so the existing skip path engages at decode
-shapes, and writing the selective bitmap into the mask path of the
-shader.
+### 2.3 Proposed selective-attention mechanism
 
-Intellectual credit: the selective-attention lineage (Quest, NSA,
-SnapKV/H2O protection results, COBS second-order analysis, and CUDA
-block-skip work in the llama.cpp family) is the ancestor; the
-Chinese-community selective-attention literature was the sourced map. The
-contribution here is the end-to-end consumer-Vulkan validation at 200k
-with pre-registered quality gating.
+The original design notes describe selecting 128-token KV blocks for each
+layer/head, protecting sink/recent blocks, and choosing additional blocks by
+query relevance before skipping others in the attention tile loop. They refer
+to `GGML_VK_FA_SELECT_KEEP` and `GGML_VK_FA_SELECT_MINKV` as runtime
+controls in a custom executable.
 
-Control: a keep-all run (KEEP=100 through the same selector machinery)
-measures zero fixed tax (33.00 t/s vs 32.87 t/s stock), so the measured
-speedups are attributable to skipped tiles, and the residual budget miss
-at K30 (~1.5 t/s) is tile-skip inefficiency on frontier partial tiles,
-not dispatch overhead.
+This is a description of design intent. The exact measured source diff was
+not archived, and [the reconstructed patch](../patches/selective-skip.diff)
+does not implement the full scoring/keep-set or mask-writing logic. It is not
+a verified implementation of that description or a behavior-equivalent
+replacement for the measured executable. Setting those environment variables
+in stock llama.cpp does not supply the custom selector.
 
-### 2.4 Benchmark protocol
+The notes cite Quest/NSA-style inspiration. That attribution does not establish
+algorithmic equivalence, research novelty, or priority over other implementations.
 
-- Cache-hit protocol: fill to depth via a chunked thermal loader (with
-  temperature abort gates), then measure generation on short follow-ups
-  so every number is a true cache-hit read at the stated depth.
-- Pre-registration: verdict bands were declared before runs; kill rules
-  were fired or explicitly not fired and logged.
-- Quality gates: multi-hop retrieval at true depth (two facts at 12%/88%
-  positions, combined answer; used as a smoke test, see Limitations),
-  GSM8K on a fixed 150-problem sample (self-consistent protocol, not
-  leaderboard-comparable), and draft acceptance tracking per arm.
-- Honesty rules: same-session anchors bracket every comparison; cross-
-  boot spread is treated as a noise band; the fast/slow bistable driver
-  state is classified per session.
+### 2.4 Measurement protocol and limits
 
-## 3. Results
+The campaign narrative describes filling a cache before short follow-up
+requests, measuring server generation with speculative multi-token prediction
+(MTP), and separately using `llama-bench` with MTP disabled. Those paths
+must be reported separately.
 
-### 3.1 The selective-skip ladder at 199.7k resident
+The cache-fill loader and complete server harness are not present as a runnable
+end-to-end workflow. Some JSON fields, including requested `docTokens` and
+per-request `promptN`, cannot by themselves establish actual resident depth.
+The paper's original ladder description used sequential arms, not a fully
+interleaved design. Possible order effects, launch variability, and differing
+builds limit causal comparisons.
 
-Same boot, same fill, sequential arms, with a dense (stock) anchor:
+## 3. Historical recorded results
 
-| Rung | KEEP | gen mean t/s | vs stock | multi-hop | acceptance p |
-|---|---|---|---|---|---|
-| STOCK | dense | 32.87 | - | 3/3 | 0.9394 |
-| K75 | 75% | 33.80 | +2.8% | 3/3 | 0.9481 |
-| K50 | 50% | 38.53 | +17.2% | 3/3 | 0.9427 |
-| K40 | 40% | 41.88 | +27.4% | 3/3 | 0.9075 |
-| **K30** | **30%** | **46.16** | **+40.4%** | **3/3** | **0.9374** |
-| K25 | 25% | 46.90 | +42.7% | **2/3 (miss)** | 0.9143 |
+### 3.1 Working-depth gate
 
-Operating point = K30 (K25 adds only 0.7 t/s at the first retrieval
-failure). Keep-all control: 33.00 t/s = +0.13 vs stock, i.e. zero fixed
-tax. Budget model fit: eta=0.80; the model predicted 47.6 t/s at K30,
-measured 46.16 (within 1.5).
+| Statistic | Reported result | Evidence |
+|---|---|---|
+| Fourth-highest per-launch cache-hit mean out of five | 56.6 tokens/s | `pareto-screen-c1.json` through `pareto-screen-c5.json`; two cached probes per launch |
+| Twenty-minute rolling-median floor | 58.5 tokens/s | `sustained-pareto256.json`, field `rollingMedianFloor` |
+| Minimum individual sample in that record | 56.12 tokens/s | Minimum of the 20 saved sample rates |
+| Gate-era custom GSM8K check | 142/150 | `gsm8k-pareto64.json` |
 
-### 3.2 Operating-point replication (fresh boot)
+These are working-depth records (approximately 40k resident, 256 Ki allocated),
+not 200k-resident results. The saved rolling-median field does not mean every
+sample exceeded 58.5 tokens/s; a complete definition of the original smoothing
+procedure is not archived. The gate's aggregation must not be described as the
+fourth-highest individual probe.
 
-Multi-hop 3/3 (mean 44.6 t/s, cross-boot drift inside the noise band),
-draft acceptance 0.9167, GSM8K 144/150 (96.0%) vs the 145/150 dense
-baseline (`results/gsm8k-dense-baseline.json`): two arithmetic slips,
-attributed to decode stochasticity (the runner sends no temperature or
-seed).
+### 3.2 Selector and stock server/MTP records
 
-### 3.3 The depth curve and pass anatomy
+| Record | Mean generation rate | Evidence |
+|---|---:|---|
+| Stock/no selector | 32.87 tokens/s | `bench-r6l2-mh-STOCK.json` |
+| Selector KEEP=30 | 46.16 tokens/s | `bench-r6l2-mh-K30.json`, three runs |
+| Separate fresh-boot KEEP=30 | 44.6 tokens/s | `bench-r6op-mh.json`, three runs |
+| Keep-all control | 33.00 tokens/s | `bench-r6-keepall.json`, five runs |
+| Depth-GSM8K speed proxy | 42.21 tokens/s | `bench-depth-gsm8k.json`, mean of 30 per-problem rates |
 
-Decode t/s vs resident depth is plotted in the figures (fig-depth-curve).
-Pass anatomy at 200k: a 75.3 ms pass = weights 20.7 ms + draft ~13.0 ms
-(flat, depth-independent) + attention 41.6 ms (batch-linear in KV).
-Attention is ~55% of the pass at 200k and ~72% of the logged-op dump at
-250k; the selective-skip result follows directly from attacking the
-batch-linear term.
+The author described these as approximately 200k-resident experiments. The
+46.16 value is a three-run mean, not the maximum observed run; the underlying
+rates are approximately 45.36, 44.91, and 48.20. Its ratio to the recorded stock
+mean is approximately 1.404, an observed difference of about 40.4% in those
+records. This does not by itself prove causal attribution or reproducibility.
 
-### 3.4 Working-depth headline
+The keep-all mean differs from stock by about 0.13 tokens/s. A small observed
+difference is not proof of exactly zero fixed overhead. Similarly, the
+42.21 tokens/s arithmetic mean is not aggregate token-weighted throughput and
+is not a formal 20-minute floor. Fresh-boot results describe that recorded
+launch, not a guarantee for another one.
 
-At 40k resident / 256k alloc, the pareto recipe alone delivers 56.6 t/s
-4th-best-of-5 and a 58.5 t/s 20-minute sustained floor with GSM8K
-142/150: the recipe is the production configuration today.
+### 3.3 Raw decoding with MTP disabled
 
-### 3.5 The failure record
+The stock `llama-bench` curve records approximately 45.3 tokens/s at 4,096
+tokens of depth and 28.3 at 200,000. The corresponding selector curve is
+nearly unchanged at the recorded depths (about 0.12 tokens/s maximum difference).
+This dataset does not show a meaningful raw-decode selector gain.
 
-| mechanism | outcome |
-|---|---|
-| draft-attention-window patch | NEUTRAL at 200k (model attention is global; windows are not honored); also not novel (merged upstream) |
-| row-fused flash-attention kernel | REGRESSED -33% vs stock, same build |
-| token-packed flash attention | ENGAGED and NEGATIVE (-33%) |
-| scalar routing at batch 3 | NULL (no amortization) |
-| MAX_NODES dispatch theory | bistable-state mirage (+82% withdrawn after a controlled rerun) |
+Evidence: `bench-lb-depth-*.json` and
+`bench-lb-k30-depth-*.json`. Their metrics must not be mixed with server/MTP
+rates or assumed directly comparable to other published runs with different
+models, builds, or settings.
 
-Each failure redirected the work toward the dead-time anatomy and then
-the selective-skip; the decision-log method is itself part of the
-contribution.
+### 3.4 Quality samples
 
-## 4. Figures
+| Check | Recorded result | Boundary |
+|---|---|---|
+| Depth-GSM8K | 29/30 (96.7%) | Small custom sample described as selection-active |
+| Later base GSM8K | 144/150 (96.0%) | Bare-question check, selection inactive at shallow occupancy |
+| Recorded reference GSM8K | 145/150 | Custom reference, not an official leaderboard baseline |
+| Retrieval smoke check | Three successful repetitions | One fixed question with a substring checker |
+| LongBench v2 subset | 14/25 (56%) | 22 short and three medium examples; thinking disabled |
 
-- F1 fig-depth-curve: decode t/s vs resident context (server/MTP path,
-  stock and K30).
-- F2 fig-k30-vs-stock-mtp: the K30 vs stock comparison on the MTP-on
-  path.
-- F3 fig-llamabench: the llama-bench MTP-off raw curve (stock and K30
-  nearly overlap: the skip is neutral on the raw path).
-- The raw CSVs behind all three figures are included in the repo.
+Sources are `bench-depth-gsm8k.json`, `bench-r6op-gsm8k.json`,
+`gsm8k-dense-baseline.json`, `bench-r6l2-mh-K30.json`, and
+`bench-longbench-v2.json`.
 
-## 4.1 Peer context (verified at source, 2026-08-24)
+The base and depth checks test different conditions. Three repetitions of one
+retrieval prompt do not measure performance over three independent tasks.
+Custom prompts, answer extraction, sample selection, and stochasticity limit
+generalization. The files do not establish broad quality preservation, full
+official GSM8K/LongBench performance, or robust long-context reasoning. No
+completed RULER evaluation is present.
 
-Checked the public record before publishing: community benchmark tables
-(the sudoingX/qwen38-mtp table and its radeon sweep notes), Hugging Face
-model cards, r/LocalLLaMA, and Chinese community boards.
+## 4. Later checks that did not reproduce the headline
 
-- At true 200k resident on a single 16 GB AMD card with quality gates:
-  to my knowledge, no published result matches 46.16 t/s plus multi-hop
-  3/3 at depth plus depth-GSM8K 29/30 with selection active (GSM8K
-  144/150 on bare questions is a build-regression check, not a
-  selectivity receipt).
-- The closest single-16GB peers all measure at much shallower depth:
-  an RX 7900 GRE 16 GB row reports 47.8 t/s average but at 29-37k
-  context only (5-6x shallower), and a reported RX 9070 XT at 46 t/s
-  was measured at 32k context.
-- Higher-VRAM cards (RTX 5090 32 GB, RTX 4090 24 GB, RX 7900 XTX
-  24 GB) beat this work on raw short-context speed. That is expected and
-  not a claim to the contrary: the differentiator here is depth (200k
-  resident) without collapsing speed, via the selective-attention
-  tile-skip, with quality gates intact, on the smallest VRAM tier.
+[protocol-vs-state-2026-08-24.json](../results/protocol-vs-state-2026-08-24.json)
+records six shallow empty/loaded-cache probes from 23.0 to 29.3 tokens/s.
+[working-depth-clean-cell-2026-08-24.json](../results/working-depth-clean-cell-2026-08-24.json)
+records six rates from 25.2 to 30.5, with a mean of approximately 27.2.
 
-Sources: github.com/sudoingX/qwen38-mtp (community table and
-sweeps/radeon.md), the kbin post by cicadagen (32k context stated),
-and the sudoingX table's 4090/5090 rows.
+These checks did not reproduce the headline working-depth rates and were
+labeled UNCLASSIFIED. The earlier narrative proposed hardware/driver state
+variation as an explanation. The preserved record does not establish that
+cause or exclude differences in build, protocol, runtime state, or missing
+configuration. The slower observations remain part of the evidence.
 
-## 5. Discussion
+Original notes also describe unsuccessful kernel/dispatch experiments and
+bandwidth/pass-budget hypotheses. Complete executable artifacts and supporting
+logs for every such claim are not included. They are historical hypotheses and
+reported engineering observations, not independently established diagnoses or
+a complete falsification record.
 
-For local AI, the combination (placement-aware quantization plus
-selective skip) moves a 27B long-context workload from "needs a
-datacenter rental" to "runs on the card under a gaming monitor's power
-budget". The selective-attention path is training-free, env-gated,
-dense-restorable, and costs nothing when fully kept: properties that make
-it deployable rather than merely publishable. The budget model (eta ~0.8,
-zero fixed tax) says further gains come from better gather efficiency at
-low rho (frontier partial tiles), and the quality cliff at KEEP<0.30 says
-the selector's keep-set composition (structural protection plus
-first-order bounds) is currently the binding constraint; second-order
-scores are the identified upgrade if harder retrieval demands it.
+## 5. Figures and interpretation
 
-Scaling note: adding GPUs via layer-split scales fill speed (1350-1826
-tok/s) but not decode per GPU. Per GPU, this single-card result exceeds a
-known dual-RDNA4 rig at comparable depth (~21 t/s/GPU at 98k).
+The PNGs and CSVs in [figures/](figures/) are unchanged historical artifacts:
 
-## 6. Limitations
+- `fig-depth-curve`: selected server/MTP rates against author-reported depth.
+- `fig-k30-vs-stock-mtp`: historical selector/stock server-path comparison.
+- `fig-llamabench`: MTP-disabled raw-decode curves.
 
-1. All headline numbers are single-session, single-rig, n=1
-   measurements. The full certification set (two sessions, ABAB
-   interleave, sustained floor) is planned but has not run.
-2. Cross-boot spread of +-2.25 t/s and launch-order drift of +-5 t/s
-   exist; sequential arms are bracketed but not interleaved.
-3. Bistable driver states (fast/slow, ~1.36-1.84x swings by path) exist
-   on this rig; sessions were fast-consistent, but state classification
-   must accompany every future number.
-4. The multi-hop test is a smoke test: fixed question, lexically
-   overlapping facts, substring checker, N=3 (Clopper-Pearson upper bound
-   on failure ~63%). Chained N>=50 with paraphrase-gap needles is
-   mandatory certification and may fail where the smoke passes.
-5. The GSM8K protocol is self-consistent (own prompt, own extraction,
-   fixed 150 sample); it is never leaderboard-comparable.
-6. The custom quantization is not leaderboard-comparable either (a
-   different blob than public releases).
-7. Single rig, single GPU vendor, single OS; RDNA4-specific paths
-   (coopmat1 flash attention, mask_opt availability) may differ
-   elsewhere.
-8. The selector keep-set is first-order (Quest-class bounds); hard
-   multi-hop under-selection is the known failure mode.
-9. The selective-skip source change is published as a reconstruction in
-   `patches/` (written from the build notes; the exact build-machine
-   diff was not archived, so the shipped binary is the source of record
-   for the measurements). Anyone rebuilding from the reconstruction
-   must re-run the quality gates before trusting it.
-10. MTP acceptance depends on the draft seeing consistent context; the
-    selector masking policy for the draft path is documented, but the
-    interaction is only bounded by acceptance receipts, not exhaustively
-    mapped.
-11. LongBench v2 was run on a 25-question short/medium subset at the
-    K30 operating point (14/25 = 56%; contexts up to ~46k words, thinking
-    off, temperature 0). RULER is the next benchmark step; the quality
-    story rests on depth-GSM8K at 200k, base GSM8K, the multi-hop smoke
-    test, and the LongBench subset.
+A figure is a presentation of selected records, not additional replication.
+Labels inherited from the original campaign should be interpreted with the
+corrected statistic definitions above. No figure establishes current rankings,
+a 200k-resident sustained floor, or universal hardware compatibility.
 
-## 7. Related work
+## 6. Reproduction gaps and possible future work
 
-Selective/sparse attention lineage (credited ancestors): Quest block
-min/max bounds; SnapKV/H2O/StreamingLLM protection results (scoring-only
-collapses at high eviction; arXiv 2605.18053); COBS second-order block
-covariance (arXiv 2607.09052); opencoti-llamafile #551 (CUDA-only
-llama.cpp-family block-skip; coverage thresholds at 24-48k);
-FlashPrefill thresholding at 256k (arXiv 2603.06199). Upstream llama.cpp
-has no training-free selective attention: DSA #23346 needs a trained
-indexer; MiniMax-M3 MSA #24908 is trained-semantics; SparQ streams all
-KV. Draft-window precedents (not claimed here): vllm-ascend #10023,
-speculators #523, sparkinfer #751, ik_llama.cpp #2021. Kernel-side
-context: llama.cpp #26663 (Windows Vulkan bandwidth collapse at
-hidden>=4096), vLLM #47763 (verify-as-decode re-stream), and MagicDec
-(arXiv 2408.11049) for selective drafting at depth.
+An independent replication would need an immutable manifest of model inputs,
+quantizer/runtime versions, the complete selector implementation, the cache-fill
+and scoring harnesses, and full run logs. Measurements should separate build
+changes from selector changes, record actual occupied cache depth, use repeated
+and interleaved controls, and report both per-request rates and appropriately
+weighted totals.
 
----
+Quality evaluation would need independent retrieval tasks and larger, documented
+samples, including failures. Exact source and runtime provenance would be needed
+before attributing speed changes to a specific attention mechanism. Those are
+requirements for future work, not claims of completed or scheduled experiments.
 
-## A note from the author
+The current `repro/` scripts contain manual and unimplemented steps. The map
+and published checksum alone do not guarantee a byte-identical rebuild or
+reproduction of measured rates. The artifact's suitability for a new system
+requires fresh testing. No present-day replacement or newer-model superiority
+is established by this record.
 
-This is my only GPU, and I am still paying it off. It is also my school
-and everything rig, so I could not go as deep into this as I wanted.
-I left all the data and receipts here so people can improve on this and
-do not waste time on ground I already covered. I hope this helps people
-who cannot afford a big rig, and I welcome feedback and replication. If
-something here is wrong, show me the receipt and I will fix it.
+## 7. Project note, attribution, and licenses
 
----
+This repository preserves available experimental results and configuration
+notes for research reference. Feedback and independent replication findings
+can be shared through repository issues.
 
-## Credits
+Credit belongs to Qwen for the base model, Unsloth for the referenced GGUF
+distribution, and llama.cpp for the inference/quantization tooling. The original
+publication disclosed human oversight and AI-assisted implementation and
+analysis. Its Quest/NSA-style attribution describes inspiration, not a verified
+implementation or novelty claim.
 
-Model: Qwen3.8-27B (Apache-2.0) and the Unsloth GGUF pipeline (BF16
-base, imatrix, MTP heads). Tooling: llama.cpp. The selective-attention
-tile-skip builds on the Chinese open-source selective-attention research
-lineage (Quest/NSA style). This work was produced with human oversight
-plus AI assistants by role: DeepSeek-flash (execution), Claude and Opus
-(analysis), and an anonymous advisor (pre-registered decision logic).
+Model weights retain their declared Apache-2.0 license. The root
+[MIT license](../LICENSE) covers repository code/configuration, and this note and
+its figures retain [CC-BY-4.0](LICENSE). See
+[the artifact notes](../configs/blob-identity.md) for the published model
+identity and [the root README](../README.md#credits-and-licenses) for license sources.
 
-## Receipts
-
-Every number above traces to a data file in this repository's
-`results/` directory (see `results/README.md` for the field explainer).
-The result files are the source of record; if prose and a result file
-disagree, the result file is right. The complete decision log and
-negative-result records are archived alongside this submission.
+The [results index](../results/README.md) explains the saved evidence. Raw records
+take precedence over inconsistent prose for what the files report; their
+presence does not independently authenticate the original experiment.
