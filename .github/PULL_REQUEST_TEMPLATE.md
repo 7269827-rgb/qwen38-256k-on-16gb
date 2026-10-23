@@ -9,6 +9,7 @@
 ## Checklist
 
 - [ ] Numbers keep the two regimes labeled (server/MTP-on vs llama-bench MTP-off)
-- [ ] No absolute paths, machine names, or credentials
-- [ ] Result files updated if prose changed; receipts attached
-- [ ] README table unchanged unless receipts back the new number
+- [ ] No credentials, private machine identifiers, or personal filesystem paths
+- [ ] Historical result files preserved; new measurements stored separately
+- [ ] Changed claims cite their supporting records and relevant limitations
+- [ ] No new deployment recommendation or reproduction guarantee without evidence

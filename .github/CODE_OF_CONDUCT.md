@@ -51,12 +51,11 @@ public spaces.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may
-be reported to the community leaders responsible for enforcement. All
-complaints will be reviewed and investigated promptly and fairly.
-
-Community leaders who do not follow or enforce the Code of Conduct in
-good faith may face temporary or permanent repercussions.
+Use GitHub's reporting tools on the relevant content or account to report
+abusive, harassing, or otherwise unacceptable behavior. Do not publish private
+information or sensitive incident details in a public issue. This legacy
+repository has no documented dedicated confidential conduct-reporting channel
+or guaranteed response time.
 
 ## Attribution
 

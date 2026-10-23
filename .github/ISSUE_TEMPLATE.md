@@ -6,9 +6,10 @@ labels: ""
 assignees: ""
 ---
 
-Thank you for taking the time. Before opening: check the README table and
-the results files. Result files outrank prose; if a number looks wrong,
-quote the file and line.
+Before opening: read the README's legacy status and reproduction limitations.
+If a number looks wrong, quote the supporting result file and explain the
+discrepancy. Historical records are evidence of the reported measurements,
+not independent verification or a guarantee of reproducibility.
 
 ## What kind of issue is this?
 
@@ -21,6 +22,8 @@ quote the file and line.
 
 **Hardware and OS** (for replication reports):
 
+**Software revisions, MTP setting, allocated context, and occupied cache depth:**
+
 **What you ran** (exact command, or point to the repro script):
 
 **What you expected:**
@@ -32,5 +35,7 @@ quote the file and line.
 ## Ground rules (from CONTRIBUTING.md)
 
 - Two number regimes stay labeled: server/MTP-on and llama-bench MTP-off.
-- Never present a single best run as the sustained bar.
-- No absolute paths, no machine names, no credentials.
+- Distinguish individual samples, run means, workload means, and rolling floors.
+- Do not overwrite historical measurements to match a new run.
+- Remove credentials, private machine identifiers, and personal filesystem paths.
+- For security-sensitive reports, read SECURITY.md before posting details.

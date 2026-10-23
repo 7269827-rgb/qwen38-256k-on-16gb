@@ -1,39 +1,49 @@
 # Contributing
 
-Thanks for taking an interest. This is a single-rig measurement repo, so
-contributions look a little different from a typical software project.
+This is a legacy research record of a single-GPU quantization and inference
+experiment. It is not recommended as a current deployment configuration.
+Contributions that improve the accuracy and usefulness of the record are welcome;
+there is no maintenance schedule or response-time commitment.
 
 ## What is welcome
 
-1. **Replication reports.** Run the same config on your hardware and
-   report what you get. Same card, different card, different OS: all
-   useful. Open an issue titled `Replication: <hardware>` with the
-   numbers and your launch flags.
+1. **Independent replication reports.** Read the reproduction limitations in
+   the README first: the exact measured selector diff was not preserved, and the
+   scripts contain manual and unimplemented steps. If you evaluate a configuration,
+   open an issue titled `Replication: <hardware>` with the software revisions,
+   launch flags, procedure, and results. Identify any differences from the
+   historical experiment.
 2. **Corrections to the measurement record.** If a result file or the
-   README table disagrees with what you can reproduce, tell me. Result
-   files outrank prose; I will fix the prose.
+   README table disagrees with a saved record, identify the discrepancy. A new
+   measurement that differs from an old one should be documented separately;
+   it is not a reason to overwrite a historical result.
 3. **New measurement points.** Different depths, different KEEP values,
    different quant maps, different backends. Add the JSON receipt under
    `results/` in the same shape as the existing files and document how
-   you ran it.
+   you ran it. Give new records distinct filenames and dates, and preserve
+   the original records.
 4. **Docs.** Clearer repro scripts, flag explanations, figures.
 
 ## What is not welcome
 
-- Benchmark numbers without their receipt (no JSON, no flags, no
-  protocol). Numbers without receipts get closed.
+- Benchmark claims without supporting measurements, configuration, and protocol.
 - Unverifiable superlatives. Everything here is "under documented
   conditions"; keep that standard.
 
 ## Ground rules
 
-- Keep the two number regimes labeled: server/MTP-on (real usage) and
+- Keep the two number regimes labeled: server/MTP-on and
   llama-bench MTP-off (comparability). Never conflate them.
-- Never present a single best run (46.16 t/s) as the sustained bar. The
-  honest set is 46.16 measured best, 44.6 fresh boot, ~42 sustained.
-- Single-rig, n=1, same-day-interleaved methodology. State your rig and
-  session conditions in any report.
-- No absolute paths, no machine names, no credentials anywhere.
+- Label the historical 46.16 t/s and separate fresh-boot 44.6 t/s figures
+  as three-run means. The 42.21 t/s figure is a mean of 30 per-problem
+  rates, not a measured 20-minute sustained floor. The working-depth
+  58.5 t/s figure is a reported rolling-median floor, not the lowest
+  individual sample or a 200k-resident measurement.
+- State hardware, software, occupied context depth, timing method, and session
+  conditions. Distinguish sequential and interleaved comparisons. The archived
+  record does not establish that every comparison was interleaved.
+- Remove credentials, private machine identifiers, and personal filesystem paths
+  from new submissions. Mark any redactions without changing the measured values.
 
 ## Process
 
@@ -45,5 +55,5 @@ contributions look a little different from a typical software project.
 ## License
 
 By contributing you agree your contributions are licensed under the
-same terms as the repo: MIT for code and configs, CC-BY-4.0 for paper
-text and figures (see LICENSE and paper/LICENSE).
+same terms as the repo: MIT for code and configs, CC-BY-4.0 for paper text and figures
+(see [LICENSE](../LICENSE) and [paper/LICENSE](../paper/LICENSE)).

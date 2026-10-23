@@ -2,36 +2,42 @@
 
 ## Supported versions
 
-This repository publishes measurements and documentation, not a
-long-lived software product. The only executable artifact is the set of
-repro shell scripts in `repro/`, which wrap llama.cpp and llama-bench
-commands. There is no supported version matrix; the current state of the
-default branch is the reference.
+This legacy repository preserves measurements, documentation, shell-script
+fragments, and an incomplete experimental source patch. It is not recommended
+for new deployments and has no supported version matrix or security-update
+commitment. The default branch is the current documentation reference, not a
+supported runtime release. Review any script or patch before using it.
 
 ## Reporting a vulnerability
 
-If you believe you have found a security issue in anything in this
-repository, do not open a public issue. Report it privately:
+Do not put credentials, private data, or sensitive exploit details in a public
+issue. If the repository's Security tab offers **Report a vulnerability**, use
+that private reporting feature. Its availability depends on the repository's
+settings; this document does not establish that it is enabled.
 
-- Use GitHub's private vulnerability reporting for this repository
-  (Security tab, "Report a vulnerability"), or
-- Open a private issue mentioning "security" in the title.
+If that option is unavailable, this repository has no documented private
+reporting channel. You may open a minimal public issue requesting one, without
+disclosing sensitive details. Ordinary GitHub repository issues are public;
+there is no "private issue" option for this public repository.
 
-Please include:
+In a private report, include:
 
 - The file and line involved
 - What the issue allows an attacker to do
 - A minimal reproduction if possible
 
-## What I take seriously
+## Relevant reports
 
 - Anything in the repro scripts that could execute unexpected commands
 - Credential or path handling in documented commands
-- Misleading measurement claims that could be used to deceive
+- Documentation that encourages unsafe handling of external artifacts
+
+Measurement corrections without security-sensitive information can be reported
+as ordinary issues. There is no guaranteed triage or resolution timeframe.
 
 ## Notes
 
 - The benchmark JSONs contain loopback endpoints (127.0.0.1) that were
   local test servers, not public services.
-- The model blob is a research artifact; hash verification instructions
-  are in `configs/blob-identity.md`.
+- The model blob is a research artifact; its published SHA256 and provenance
+  limitations are recorded in [configs/blob-identity.md](../configs/blob-identity.md).
